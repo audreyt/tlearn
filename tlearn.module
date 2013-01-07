@@ -305,7 +305,7 @@ function tlearn_singleclass_permission($nid) {
       ->execute()
       ->fetch();
 
-  if (count($results)) return TLEARN_PERMISSION_AUTHORIZED;
+  if ($results && count($results)) return TLEARN_PERMISSION_AUTHORIZED;
   else return TLEARN_PERMISSION_PROHIBIT;     
 }
 
