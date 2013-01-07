@@ -321,6 +321,7 @@ function tlearn_singleclass_permission($nid) {
  * 傳回節次的閱讀權限 
  */
 function tlearn_section_permission($section_nid) {
+  global $user;
   $section_type = variable_get('tlearn_section_type');
   $demo_field = variable_get('tlearn_demoflag_field');
   
@@ -340,6 +341,10 @@ function tlearn_section_permission($section_nid) {
   if ($permission == TLEARN_PERMISSION_PROHIBIT) {
     $items = field_get_items('node', $node, $demo_field);
     $permission = empty($items) ? TLEARN_PERMISSION_PROHIBIT : array_shift(array_shift($items)); 
+    if ($permission == TLEARN_PERMISSION_MEMBER && !$user->uid) {
+      // Guest with member-only output ; prohibit
+      $permission = TLEARN_PERMISSION_PROHIBIT;
+    }
   }
   
   return $permission; 

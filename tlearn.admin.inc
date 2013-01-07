@@ -14,10 +14,6 @@
  * @todo 要不要增加 cloudfront 設定測試的功能？ 
  */
 function tlearn_admin_tlearn($form, &$form_state) {
-  
-  // @todo just test
-  $vars = tlearn_section_vars(4);
-  
   $form = array();
   
   $form['markup0'] = array(
