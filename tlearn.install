@@ -1,0 +1,146 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the tlearn module
+ */
+
+/**
+ * Implements hook_schema(). 
+ */
+function tlearn_schema() {
+  
+  $schema['tlearn_roles'] = array(
+    'description' => 'Role permissions on tlearn reading.',
+    'fields' => array(
+      'rid' => array(
+        'description' => '{role}.rid used as roles for reading classes.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'terms' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'terms having permissions to read, 0 for all terms, null for none',
+      ),
+    ),
+    'primary key' => array('rid'),
+  );
+  
+
+  $schema['tlearn_video_visit'] = array(
+    'description' => t('video visit record for users'),
+    'fields' => array(
+      'vv_id' => array(
+        'description' => t('primary key'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => t('user uid'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'classno' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'class no',
+      ), 
+      
+      'chapord' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'chapter no',
+      ), 
+      'sectionord' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'section no',
+      ), 
+      'time_visited' => array(
+        'description' => t('time visited for this section, this user'),
+        'mysql_type' => 'datetime',      // The equivalent MySQL data type
+        'pgsql_type' => 'timestamp',    // The equivalent PostgreSQL data type'
+        'not null' => TRUE,
+      ),
+      'internet_ip' => array(
+        'description' => t('user browser ip'),
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('vv_id'),
+    'indexes' => array(
+      'internet_ip' => array('internet_ip', 'time_visited'),
+      'classno' => array('classno', 'time_visited', 'uid'),
+      'time_visited' => array('time_visited', 'uid', 'classno'),
+      'uid' => array('uid', 'time_visited', 'classno'),
+    ),
+  );
+    
+  
+  $schema['tlearn_class_privilege'] = array(
+    'description' => t('使用者課程權限檔'),
+    'fields' => array(
+      'cpid' => array(
+        'description' => t('primary key field'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => t('user uid'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'classno' => array(
+        'description' => 'class no',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'start_date' => array(
+        'description' => t('起始日期'),
+        'mysql_type' => 'datetime',      // The equivalent MySQL data type
+        'pgsql_type' => 'timestamp',     // The equivalent PostgreSQL data type'
+        'not null' => TRUE,
+      ),
+      'expire_date' => array(
+        'description' => t('結束日期'),
+        'mysql_type' => 'datetime',      // The equivalent MySQL data type
+        'pgsql_type' => 'timestamp',     // The equivalent PostgreSQL data type'
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('cpid'),
+    'indexes' => array(
+      'license' => array('classno', 'uid'),
+      'privilege' => array('uid', 'classno'),
+    ),
+  );
+  
+  // 在 D7, 需要指定 cache table 
+  $schema['cache_tlearn'] = drupal_get_schema_unprocessed('system', 'cache');
+  $schema['cache_tlearn']['description'] = 'Cache table for tlearn module.';
+
+  return $schema;
+}
+
+function tlearn_uninstall() {
+  // @todo remember to remove the comment marked below after finishing development 
+//  db_query("DELETE FROM {variable} WHERE name LIKE 'tlearn_%%'");  
+}

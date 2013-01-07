@@ -1,0 +1,1236 @@
+  <?php
+/**
+ * @file
+ * Simplenews node handling, sent email, newsletter block and general hooks
+ */
+
+/**************************************
+ * Some constant definition 
+ */
+
+/**
+ * Movie casting method 
+ */
+define('TLEARN_USE_NONE', 0);
+define('TLEARN_USE_YOUTUBE', 1);
+define('TLEARN_USE_SITEFOLDER', 2);
+define('TLEARN_USE_CLOUDFRONT', 3);
+
+
+/**
+ * Additional Term Options  
+ * 不可使用 '0' 作為值，因為要用在 #checkboes 中 
+ */
+define('TLEARN_OPTION_ALL', -2);
+define('TLEARN_OPTION_NONE', -1); 
+
+
+/* 
+ * Movie Permissions
+ */
+define('TLEARN_PERMISSION_FREE', 1);
+define('TLEARN_PERMISSION_MEMBER', 2);
+//don't use belows in demoflag field of section type 
+define('TLEARN_PERMISSION_AUTHORIZED', 9);   
+define('TLEARN_PERMISSION_PROHIBIT', 0); 
+
+/*
+ * cache constant 
+ */
+define('CACHE_TLEARN', 'cache_tlearn'); 
+
+
+/**
+ * Implements hook_permission().
+ *
+ */
+function tlearn_permission() {
+  return array(
+    'administer class settings' => array(
+      'title' => '管理課程設定',
+    ),
+    'administer section settings' => array(
+      'title' => '管理節次設定',
+    ),
+    'administer role reading permissions' => array(
+      'title' => '管理角色閱讀權限',
+    ),
+  );
+}
+
+
+/**
+ * Implementation hook_menu()
+ * 
+ */
+function tlearn_menu() {
+  
+  $items['admin/config/tlearn'] = array(
+    'title' => 'Tlearn 模組設定',
+    'description' => '設定課程的各項參數',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tlearn_admin_tlearn'),
+    'access arguments' => array('administer class settings'),  
+    'file' => 'tlearn.admin.inc',    
+  ); 
+
+  // tlearn 主要設定功能
+  $items['admin/config/tlearn/tlearn'] = array(
+    'title' => '課程參數設定',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 10,
+  );   
+  
+  // 節次設定功能
+  $items['admin/config/tlearn/section'] = array(
+    'title' => '節次參數設定',
+    'type' => MENU_LOCAL_TASK,   
+    'weight' => 20,    
+    'description' => '設定課程節次的各項參數',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tlearn_admin_section'),
+    'access arguments' => array('administer section settings'),  
+    'file' => 'tlearn.admin.inc',    
+  ); 
+  
+  // roles 相關設定功能
+  $items['admin/config/tlearn/troles'] = array(
+    'title' => '角色權限控制',
+    'type' => MENU_LOCAL_TASK,   
+    'weight' => 30, 
+    'description' => '設定各種角色可以閱讀哪些課程類別。',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tlearn_admin_troles'),
+    'access arguments' => array('administer role reading permissions'),  
+    'file' => 'tlearn.admin.inc',
+  ); 
+  
+  $items['admin/config/tlearn/troles/list'] = array(
+    'title' => '角色－課程類別對應清單',
+    'type' => MENU_DEFAULT_LOCAL_TASK,  
+  ); 
+
+  $items['admin/config/tlearn/troles/%tlearn_trole/delete'] = array(
+    'title' => '刪除角色閱讀權限',
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('tlearn_admin_trole_delete', 4),
+    'access arguments' => array('administer role reading permissions'),
+    'file' => 'tlearn.admin.inc',
+  ); 
+
+  $items['admin/config/tlearn/troles/%tlearn_trole/disable'] = array(
+    
+  ); 
+  
+  $items['admin/config/tlearn/troles/%tlearn_trole/edit'] = array(
+    'title' => '編輯角色閱讀權限',
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('tlearn_admin_trole_form', 4),
+    'access arguments' => array('administer role reading permissions'),
+    'file' => 'tlearn.admin.inc',    
+  ); 
+  
+  $items['admin/config/tlearn/troles/add'] = array(
+    'title' => '新增角色',
+    'type' => MENU_LOCAL_ACTION,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tlearn_admin_trole_form'),
+    'access arguments' => array('administer role reading permissions'),
+    'file' => 'tlearn.admin.inc',
+  ); 
+  
+  // 其它
+  /* 關於影片播放的 theme 函數，其權限控制不在 hoook_menu() 中處理，而是依照 tlearn 管理
+   * 介面的參數設定，進行權限的判斷。
+   */  
+  
+  return $items; 
+}
+
+/*
+ * Implementation of hook_theme() 
+ * 
+ */
+
+function tlearn_theme() {
+  $path = drupal_get_path('module', 'tlearn');
+
+  return array(
+    'tlearn_admin_troles' => array(
+      'render element' => 'form',
+      'file' => 'tlearn.theme.inc', 
+    ),
+    
+  );
+}
+
+
+
+
+/***************************************
+ * Class 功能
+ */
+
+
+/*
+ * 由 section nid, 取得 class node 
+ */
+function tlearn_fetch_class_node($section_nid) {
+  $section_node = node_load($section_nid); 
+  $items = field_get_items('node', $section_node, 'field_class_ref');
+
+//	dpm($items);
+  
+	$class_nid = array_shift(array_shift($items));
+  
+  $class_node = node_load($class_nid);
+	
+//	dpm($class_node);
+  
+  return $class_node; 
+}
+
+
+/*
+ * Decide the permission 
+ * 
+ * @para nid of a class node 
+ * 
+ * @return permission value (defined constant) 
+ */
+function tlearn_class_permission($nid) {
+  // admin 有特權
+  
+  global $user; 
+  
+  if ($user->uid ==1) return TLEARN_PERMISSION_AUTHORIZED;
+  
+  $class_type = variable_get('tlearn_class_type'); 
+  
+  if(!($node = node_load($nid))) {
+    return TLEARN_PERMISSION_PROHIBIT; 
+  }
+  
+  if (!strstr($class_type, $node->type)) {
+    return TLEARN_PERMISSION_PROHIBIT; 
+  }
+  
+  $permission = TLEARN_PERMISSION_PROHIBIT; 
+  
+  // 查詢課程類別的權限
+  $permission = tlearn_classtype_permission($node->nid); 
+  
+  // 查詢單一課程的權限
+  if ($permission == TLEARN_PERMISSION_PROHIBIT) {
+    $permission = tlearn_singleclass_permission($node->nid); 
+  }
+  
+  return $permission; 
+}
+
+
+/*
+ * 傳回 class nid 的課程類別權限
+ */
+function tlearn_classtype_permission($nid) {
+  global $user; 
+  
+  if (!$user->uid) return TLEARN_PERMISSION_PROHIBIT; 
+  if ($user->uid == 1) return TLEARN_PERMISSION_AUTHORIZED; 
+  
+  $term_field = variable_get('tlearn_class_termfield'); 
+  
+  $permission = TLEARN_PERMISSION_PROHIBIT;
+  
+  if (!($node = node_load($nid))) return TLEARN_PERMISSION_PROHIBIT; 
+    
+	$terms_want = array();
+  $items = field_get_items('node', $node, $term_field);
+	foreach($items as $item) {
+		//$terms_want += array_values($item);  這個是錯的
+		$terms_want = array_merge($terms_want, array_values($item)); 
+	}
+//	dpm($terms_want);
+  
+  
+  $roles = array_keys($user->roles);
+  
+  $terms_allowed = array(); 
+  
+  $results = db_select('tlearn_roles', 'tr')
+      ->fields('tr')
+      ->condition('rid', $roles, 'in')
+      ->execute()
+      ->fetchAllAssoc('rid'); 
+
+  foreach($results as $result) {
+		// 這裡的 array 運算使用 '+=' 是錯誤的，同 integer key 會被忽略
+    //$terms_allowed += explode(',', $result->terms);
+		$terms_allowed = array_merge($terms_allowed, explode(',', $result->terms)); 
+  }
+//	dpm($terms_allowed);
+  
+  if (in_array(TLEARN_OPTION_ALL, $terms_allowed)) return TLEARN_PERMISSION_AUTHORIZED; 
+  if (count(array_intersect($terms_want, $terms_allowed))) 
+      return TLEARN_PERMISSION_AUTHORIZED; 
+  
+  return $permission; 
+}
+
+
+/*
+ * 傳回 class nid 的單一課程權限
+ */
+function tlearn_singleclass_permission($nid) {
+  // 查詢 dbfile: tlearn_class_privilege 有無權限 
+  global $user; 
+  
+  if (!$user->uid) return TLEARN_PERMISSION_PROHIBIT; 
+  if ($user->uid == 1) return TLEARN_PERMISSION_AUTHORIZED; 
+  
+  $classno_field = variable_get('tlearn_class_nofield'); 
+  
+  $permission = TLEARN_PERMISSION_PROHIBIT;
+
+  if (!($node = node_load($nid))) return TLEARN_PERMISSION_PROHIBIT; 
+  
+  $d = date('Y-m-d', time()); 
+  
+  $results = db_select('tlearn_class_privilege', 'tp')
+      ->fields('tp')
+      ->condition('classno', $node->{$classno_field})
+      ->condition('uid', $user->uid)
+      ->condition('start_date', $d, '>')
+      ->condition('expire_date', $d, '<')
+      ->execute()
+      ->fetch();
+
+  if (count($results)) return TLEARN_PERMISSION_AUTHORIZED;
+  else return TLEARN_PERMISSION_PROHIBIT;     
+}
+
+
+
+
+/***************************************
+ * Sectioin 功能 
+ */
+
+
+/*
+ * 傳回節次的閱讀權限 
+ */
+function tlearn_section_permission($section_nid) {
+  $section_type = variable_get('tlearn_section_type');
+  $demo_field = variable_get('tlearn_demoflag_field');
+  
+  if (!($node = node_load($section_nid))) {
+    return TLEARN_PERMISSION_PROHIBIT;
+  }
+  
+  if ($node->type <> $section_type) {
+    return TLEARN_PERMISSION_PROHIBIT;
+  }
+  
+  // 看看有無課程權限, 先找其課程的 nid  
+  $class_node = tlearn_fetch_class_node($section_nid); 
+  $permission = tlearn_class_permission($class_node->nid); 
+  
+  // 否則傳回本節的權限
+  if ($permission == TLEARN_PERMISSION_PROHIBIT) {
+    $items = field_get_items('node', $node, $demo_field);
+    $permission = empty($items) ? TLEARN_PERMISSION_PROHIBIT : array_shift(array_shift($items)); 
+  }
+  
+  return $permission; 
+}
+
+
+
+/* @todo obsolete
+ * 
+ * return: an array of sections data
+ * 使用 cache 
+ */
+function tlearn_fetch_class($class_nid, $reset=false) {
+  $cid = 'class:' . $class_nid; 
+
+  $class = array();
+
+  if ($reset) {
+    $class = tlearn_set_class($class_nid);
+    cache_set($cid, $class, CACHE_TLEARN);
+  }
+  else {
+    $cache = cache_get($cid, CACHE_TLEARN);
+    if (empty($cache)) {
+      
+      // debug, didn't get eclass from cache
+//      watchdog('tlearn', "function tt_eclass_get_eclass: didnt get \$eclass from cache, \$cid=%cid",
+//        array('%cid'=>$cid)); 
+        
+      $class = tlearn_set_class($class_nid);
+      cache_set($cid, $class, CACHE_TLEARN);
+    }
+    else {
+      $class = $cache->data; 
+    }
+  }
+  return $class;
+}  
+ 
+
+function tlearn_set_class($class_nid) {
+  
+  if (!($section_type = variable_get('tlearn_section_type'))) {
+    drupal_set_message('尚未設定 tlearn 模組，未定義課程節之內容類型。', 'error');
+    exit;
+  }
+  
+  if (!($field_classref_key = variable_get('tlearn_section_classref'))) {
+    drupal_set_message('尚未設定 tlearn 模組，未定義課程連結。', 'error');
+    exit;    
+  }
+  
+  $ref_field = $field_classref_key . '_nid'; 
+  $ref_dbfile = 'field_data_' . $field_classref_key; 
+  
+  $chapord_field = variable_get('tlearn_chapord_field');
+  $sectionord_field = variable_get('tlearn_sectionord_field');
+  
+  $classno_field = variable_get('tlearn_class_nofield');
+  
+  $class_node = node_load($class_nid);
+  
+  // the easiest way to get backward reference by http://drupal.org/node/1083902#comment-4193990      
+  // 只要第一個 column 的值
+  $nids = db_select($ref_dbfile, 'ref')
+    ->fields('ref', array('entity_id'))
+    ->condition($ref_field, $class_nid)
+    ->condition('bundle', $section_type)
+    ->execute()
+    ->fetchCol();
+  
+//  dpm($nids);
+  
+  $section_nodes = node_load_multiple($nids); 
+  
+  // 開始建立 class object 
+  
+  $class = new StdClass();
+  $class->class_nid = 3; 
+  
+  $items = field_get_items('node', $class_node, $classno_field);
+  $class->classno = empty($items) ? 'error' : array_shift(array_shift($items)); 
+  
+  $sections = array();
+  foreach ($section_nodes as $node) {
+    $section['nid'] = $node->nid; 
+    
+    $items = field_get_items('node', $node, $chapord_field);
+		$section['chapord'] = empty($items) ? 0 : array_shift (array_shift ($items));
+    
+    $items = field_get_items('node', $node, $sectionord_field);
+		$section['sectionord'] = empty($items) ? 0 : array_shift (array_shift ($items));
+		
+		$sections[$node->nid] = $section; 
+  }
+  
+  $class->sections = _tlearn_array_msort($sections, array('chapord'=>SORT_ASC, 'sectionord'=>SORT_ASC));
+
+//	dpm($class);
+  return $class;
+}
+
+
+
+/* 
+ * 建立 section 相關變數, 
+ * 
+ * 傳回 array (render array) $vars 
+ * tlearn_movieshow: 秀出影片，依設定的方法以及 user 的權限作不同的呈現, 佔滿所屬的 <div> 
+ * tlearn_next_section (with link)
+ * tlearn_prev_section (with link)
+ * tlearn_class       (with link)
+ * tlearn_permission  (1: 免費閱讀, 2: 會員免費閱讀, 9: 授權閱讀, 0:無權限) 
+ * tlearn_method      (0: 無, 1: youtube, 2: 網站內部目錄, 3: Cloudfront) 
+ * 
+ */
+function tlearn_section_vars($section_nid) {
+  $chap_ord_key = variable_get('tlearn_chapord_field');
+  $section_ord_key = variable_get('tlearn_sectionord_field'); 
+
+
+  if (!$chap_ord_key || !$section_ord_key) {
+    drupal_set_message('請先設定 tlearn 模組，尚未設定章次欄位或節次欄位', 'error');
+    exit; 
+  }
+  
+  $section_type = variable_get('tlearn_section_type'); 
+  
+  $vars = array(
+    'tlearn_movieshow' => '',
+    'tlearn_next_section' => '',
+    'tlearn_prev_section' => '', 
+    'tlearn_class' => '', 
+  ); 
+  
+  if (!($section_node = node_load($section_nid))) {
+    return $vars;
+  }
+  
+  if ($section_node->type <> $section_type) {
+    return $vars;
+  }
+  
+  // 由 section nid 取得 class node 
+  if (!($class_node = tlearn_fetch_class_node($section_nid))) {
+    return $vars;
+  }
+  
+  /*
+   * 取得所有這個 class 下的 sections (array)
+   */
+  $class = tlearn_fetch_class($class_node->nid); 
+  if (empty($class)) return $vars;
+  
+  $sections = $class->sections;
+  if (empty($sections)) return $vars; 
+  
+  $next = 0; 
+  $prev = 0; 
+  $curr = 0; 
+  reset($sections);
+  
+  // @todo 這一段還有問題 
+  
+  while($element = current($sections)) {
+    if (!empty($curr)) {
+      // 剛剛拿到了 $curr, 所以現在這個是 $curr 的下一個。
+      $next = $element; 
+      break ; 
+    }
+    
+    if ($element['nid'] == $section_nid) {
+      // 找到要播放的節次資料
+      $curr = $element; 
+    }
+    else {
+      // 沒有找到，那麼現在這個可能是目㮒節次的「前一個」
+      $prev = $element; 
+    }
+    next($sections); 
+  }  
+  
+    // 以 $curr 為準，對齊
+  if (empty($curr)) {
+    // 沒有上課的節次
+    return $vars; 
+  }
+  if ($prev['nid'] == $curr['nid']) {
+    $prev= null; 
+  }
+  
+  if (empty($prev))
+    $str = '無';
+  else {
+    $node = node_load($prev['nid']);
+    $str = l($node->title, 'node/' . $node->nid);
+  }
+  $vars['tlearn_prev_section'] = array(
+    '#markup' => $str, 
+  ); 
+  
+  if (empty($next))
+    $str = '無';
+  else {
+    $node = node_load($next['nid']);
+    $str = l($node->title, 'node/' . $node->nid);  
+  }
+  $vars['tlearn_next_section'] = array(
+    '#markup' => $str, 
+  ); 
+    
+  $vars['tlearn_class'] = array(
+    '#markup' => l($class_node->title, 'node/' . $class_node->nid), 
+  );
+  
+  $vars['tlearn_movieshow'] = tlearn_movieshow_ra($vars, $class, $section_node);
+  
+  return $vars; 
+}
+
+
+/*
+ * return render array for movie show 
+ * 要檢視 user 的權限：免費閱讀、會員免費閱讀、權限者閱讀, 並且要看 tlearn 設定的播放來源 
+ * 同時，設定幾個樣版變數 
+ * 
+ * @param $vars: tlearn 的樣版變數 array
+ * @param $class: class 物件
+ * @param $Section_node: a node of section type
+ */
+function tlearn_movieshow_ra(&$vars, $class, $section_node) {
+  $output = array(); 
+  
+  $permission = tlearn_section_permission($section_node->nid); 
+  
+  // 不同的權限資格，會使用不同的播放方式 
+  $method = TLEARN_USE_NONE; 
+  switch($permission) {
+    case TLEARN_PERMISSION_AUTHORIZED: 
+      $method = variable_get('tlearn_cast_authorized');
+      break;
+    case TLEARN_PERMISSION_MEMBER:
+      $method = variable_get('tlearn_cast_memberfree');
+      break;
+    case TLEARN_PERMISSION_FREE:
+      $method = variable_get('tlearn_cast_free');
+      break;
+    case TLEARN_PERMISSION_PROHIBIT:
+      $method = TLEARN_USE_NONE; 
+      break;
+  }
+  
+  switch($method) {
+    case TLEARN_USE_CLOUDFRONT:
+      $output = tlearn_movieshow_cloudfront($permission, $class, $section_node); 
+      break;
+    case TLEARN_USE_SITEFOLDER:
+      $output = tlearn_movieshow_sitefolder($permission, $class, $section_node); 
+      break;
+    case TLEARN_USE_YOUTUBE:
+      $output = tlearn_movieshow_youtube($permission, $class, $section_node); 
+      break; 
+    case TLEARN_USE_NONE:
+      $output = array(
+        '#markup' => '您沒有權閱讀此影片', 
+      );
+      break;
+  }
+  
+  $vars['tlearn_permission'] = $permission;
+  $vars['tlearn_method'] = $method; 
+  
+  return $output; 
+}
+
+
+
+function tlearn_movieshow_cloudfront($permission, $class, $section_node) {
+  
+  switch($permission) {
+    case TLEARN_PERMISSION_AUTHORIZED:
+      $movie_field = variable_get('tlearn_authorized_moviefield');
+      break;
+    case TLEARN_PERMISSION_MEMBER:
+      $movie_field = variable_get('tlearn_memberfree_moviefiled');
+      break;
+    case TLEARN_PERMISSION_FREE:
+      $movie_field = variable_get('tlearn_free_moviefield');
+      break;
+  }
+  
+  // ex: $moviepath = 'eclassvideos/13006/00-01.mp4'; 
+  
+  $prefixdir = variable_get('tlearn_cloudfront_prefixdir', ''); 
+    
+  $moviepath = empty($prefixdir) ? '' : $prefixdir . '/'; 
+  
+  // 這邊不會遇到 youtube 嵌入欄位
+  $moviename = 'error'; 
+  $items = field_get_items('node', $section_node, $movie_field);
+  $moviename = array_shift(array_shift($items)); 
+  
+  $moviepath .= $class->classno . '/' . $moviename; 
+  
+  $domain = variable_get('tlearn_cloudfront_domain') ; 
+          
+  $configs = array(
+    'clip' => array(
+      'provider' => 'rtmp',
+      'url' => 'mp4:' . fp_confsignedurl($moviepath, time() + 60),  
+    ),
+    'plugins' => array(
+      'rtmp' => array(
+        'url' => 'flowplayer.rtmp.swf',
+        'netConnectionUrl' => 'rtmp://' . $domain . '/cfx/st',
+      ),
+    ),
+    // 如果 flowplayer 無法運作，可能要 1. clear drupal caches 2. clear firefox cache
+    // 關於下面 log 的查看法，要配合使用 firebug 
+//    'log' => array(
+//      'level' => 'debug',
+//    ),
+  );
+  
+  
+  /***********************
+// ref:  
+//var player = $f("player", "flowplayer-3.2.15.swf", {
+//  plugins: {
+//    clip: {
+//      provider: "rtmp",
+//      // call php function url-escaping for flowplayer config
+//      url: "mp4:<?= fpconfsignedurl('ccc_trailer1', time() + 60) ?>",
+//      scaling: "fit"
+//    }
+//    rtmp: {
+//      url: "flowplayer.rtmp-3.2.11.swf",
+//      netConnectionUrl: "rtmp://s1usqlxiul3jrl.cloudfront.net/cfx/st"
+//    }
+//  },
+//});  
+  *************************/
+  
+  
+  $output = theme('flowplayer', array('config' => $configs)); 
+  
+  // 上課記錄
+  if ($permission == TLEARN_PERMISSION_AUTHORIZED) {
+    _tlearn_visit_log($class, $section_node); 
+  }
+  
+  return $output; 
+}
+
+
+function tlearn_movieshow_sitefolder($permission, $class, $section_node) {
+  global $base_url;
+  
+  $moviepath = ''; 
+  
+  switch($permission) {
+    case TLEARN_PERMISSION_AUTHORIZED:
+      $movie_field = variable_get('tlearn_authorized_moviefield');
+      break;
+    case TLEARN_PERMISSION_MEMBER:
+      $movie_field = variable_get('tlearn_memberfree_moviefiled');
+      break;
+    case TLEARN_PERMISSION_FREE:
+      $movie_field = variable_get('tlearn_free_moviefield');
+      break;
+  }
+  
+  $sitefolder = variable_get('tlearn_site_path');
+  
+  // 這邊不會遇到 youtube 嵌入欄位
+  $moviename = 'error'; 
+  $items = field_get_items('node', $section_node, $movie_field);
+  $moviename = array_shift(array_shift($items)); 
+  
+  $movieurl = $base_url . '/' . $sitefolder . '/' . $class->classno . '/' . $moviename;  
+//  $movieurl = $sitefolder . '/' . $class->classno . '/' . $moviename;  
+    
+  $configs = array(
+    'clip' => array(
+      'url' => $movieurl,
+      'autoPlay' => true,
+    ),
+  );
+  
+  $output = theme('flowplayer', array('config' => $configs)); 
+  
+  // 上課記錄
+  if ($permission == TLEARN_PERMISSION_AUTHORIZED) {
+    _tlearn_visit_log($class, $section_node); 
+  }
+  
+  return $output;
+}
+
+function tlearn_movieshow_youtube($permission, $class, $section_node) {
+
+  $youtube_field = variable_get('tlearn_youtube_field');
+
+  $items = field_get_items('node', $section_node, $youtube_field); 
+  
+  if ($items) 
+    $output = array_shift (array_shift ($items)); 
+  else 
+    $output = ''; 
+  
+  return $output;  
+}
+
+
+
+/***************************************
+ * Roles 相關功能
+ */
+
+/**
+ *
+ * 載入在 tlearn_role 有定義的 Roles 並傳回 
+ */
+function tlearn_troles_load_multiple($rids = array(), $conditions = array(), $reset = FALSE) {
+  $troles = &drupal_static(__FUNCTION__, array());
+
+  // Only cache if we load all records from the database. This could be improved.
+  if (!$troles || $rids || $conditions || $reset) {
+    $troles = array();
+    $query = db_select('tlearn_roles', 'tr');
+    
+    // This function might be called when the corresponding taxonomy term was
+    // already deleted.
+
+    $query->leftJoin('role', 'r', 'r.rid = tr.rid');
+    $query->fields('tr')
+      ->fields('r', array('name', 'weight'))
+      ->orderBy('r.weight', 'ASC');
+    
+    if ($rids) {
+      $query->condition('tr.rid', $rids);
+    }
+    if ($conditions) {
+      foreach ($conditions as $key => $condition) {
+          $query->condition($key, $condition);
+      }
+    }
+
+    $troles = $query->execute()->fetchAllAssoc('rid');
+    
+    foreach($troles as $rid => $trole) {
+      $troles[$rid]->terms = explode(",", $trole->terms);
+    }
+  }
+  
+  return $troles;
+}
+
+
+/*
+ * tlearn_trole_load(). Used in hook_menu() for argument load 
+ * 
+ * return trole object 
+ * 
+ */
+function tlearn_trole_load($rid) {
+  if (!is_numeric($rid)) {
+    return FALSE;
+  }
+  $troles = tlearn_troles_load_multiple(array($rid));
+  return $troles ? $troles[$rid] : FALSE;
+}
+
+/**
+ * @todo Store trole in the database.
+ *
+ * @param $trole
+ *   trole object
+ *
+ */
+//function tlearn_trole_save($trole) {
+//  db_merge('tlearn_roles')
+//    ->key(array('rid' => $trole->rid))
+//    ->fields(array(
+//      'rid' => $category->tid,
+//      'format' => $category->format,
+//      'priority' => $category->priority,
+//      'receipt' => $category->receipt,
+//      'from_name' => $category->from_name,
+//      'from_address' => $category->from_address,
+//      'email_subject' => $category->email_subject,
+//      'hyperlinks' => $category->hyperlinks,
+//      'new_account' => $category->new_account,
+//      'opt_inout' => $category->opt_inout,
+//      'block' => $category->block,
+//    ))
+//    ->execute();
+//  module_invoke_all('simplenews_category_update', $category);
+//}
+//
+
+
+
+
+/* 
+ * 傳回 $terms array 中各個 tid 名稱總成的字串  
+ * 
+ * $terms: array 
+ */
+function tlearn_terms_desc($terms) {
+  
+  $desc = ''; 
+  
+  if (in_array(TLEARN_OPTION_ALL, $terms)) {
+    $desc = '全部';
+  }
+  elseif (in_array(TLEARN_OPTION_NONE, $terms)) {
+    $desc = '都不要';    
+  }
+  else {
+    foreach ($terms as $key => $value) {
+      $term = taxonomy_term_load($value);
+      $desc .= $term->name . ", "; 
+    }
+  }
+  
+  return $desc; 
+}
+
+/***************************************
+ * 權限檢查功能
+ */
+
+
+
+/***************************************
+ * 
+ * Theming 
+ */
+
+
+/* 針對 section 指定的 type, 提供相關版型變數
+ * 
+ * 輸出的版型變數：
+ * 
+ * tlearn_movieshow: 秀出影片，依設定的方法以及 user 的權限作不同的呈現, 佔滿所屬的 <div> 
+ * tlearn_next_section (with link)
+ * tlearn_prev_section (with link)
+ * tlearn_class        (with link)
+ * 
+ * 其它在 [section type] 中已有的欄位，由使用者自行在 template 中處理，不再作成版型變數 
+ * 
+ */
+function tlearn_preprocess_node(&$variables) {
+    
+//  if (($section_type = variable_get('tlearn_section_type', false))) {
+//    return; 
+//  }
+//  
+//  if ($variables['type'] <> $section_type) {
+//    return; 
+//  }
+  
+  $section_type = variable_get('tlearn_section_type');
+  if ($variables['type'] <> $section_type) {
+    return; 
+  }
+  
+  $vars = tlearn_section_vars($variables['nid']);
+  foreach($vars as $key => $value) {
+    $variables[$key] = $value; 
+  }
+
+  
+  // test, although this will make devel break MySql server  
+  // 針對 node 4 作測試 
+//  if (arg(0) == 'node' && arg(1) == 4) {
+//    dpm($variables);    
+//  }
+    
+  return; 
+}
+
+
+/***************************************
+ * 影片播放相關功能 
+ * 
+ */
+
+
+/* cloudfront 函數，取自 http://flowplayer.blacktrash.org/cfxsigned.php
+ * ref: http://flash.flowplayer.org/forum/3/102894
+ * 
+ * 
+ */
+
+function fp_confsignedurl($resource, $expires) {
+  $url = fp_getsignedurl($resource, $expires);
+
+  // url-encode & and =
+  return str_replace(array('&', '='), array('%26', '%3D'), $url);
+}
+
+function fp_getsignedurl($resource, $expires) {
+  $keypairid = variable_get('tlearn_cloudfront_pair_id');
+
+  // read cloudfront private key pair
+  $key_file = variable_get('tlearn_cloudfront_key_filename');
+  $fp = fopen($key_file, 'r');
+  $priv_key = fread($fp, 8192);
+  fclose($fp);
+
+  $json = '{"Statement":[{"Resource":"' . $resource . '","Condition":{"DateLessThan":{"AWS:EpochTime":' . $expires . '}}}]}';
+
+  // create the private key
+  $key = openssl_get_privatekey($priv_key);
+
+  // sign the policy with the private key
+  // depending on your php version you might have to use
+  // openssl_sign($json, $signed_policy, $key, OPENSSL_ALGO_SHA1)
+  openssl_sign($json, $signed_policy, $key);
+
+  openssl_free_key($key);
+
+  // create url safe signed policy
+  $base64_signed_policy = base64_encode($signed_policy);
+  $signature = str_replace(array('+', '=', '/'), array('-', '_', '~'), $base64_signed_policy);
+
+  // construct the url
+  $url = $resource . '?Expires=' . $expires . '&Signature=' . $signature . '&Key-Pair-Id=' . $keypairid;
+
+  return $url;
+}
+
+
+/* 
+ * Cloudfront 相關的函數
+ * 取自 cloudfront doc pdf 中提供的案例 
+ * 在 aws 的 cloudfront doc 裡，查詢 'signed url' 即可找到相關資訊 
+ * ref: http://docs.amazonwebservices.com/AmazonCloudFront/latest/DeveloperGuide/CreateURL_PHP.html
+ * 主要的結果有二個函數：
+ * - function: cloudfront_get_canned_policy_stream_name
+ * - function: cloudfront_get_custom_policy_stream_name  (主要使用這一個) 
+ * 
+ * 複雜多了，在此刪除。
+ */
+
+
+/***************************************
+ * Misc 
+ */
+
+/*
+ * 收集 names of taxonomy vocabulary 給 form 使用 
+ */
+function tlearn_vocabulary_options() {
+  $vocabularies = taxonomy_vocabulary_load_multiple(false);
+  
+  $options = array();
+  foreach ($vocabularies as $vocabulary) {
+    $options[$vocabulary->vid] = $vocabulary->name; 
+  }
+    
+  return $options; 
+}
+
+/*
+ * 收集所有的 node type names 給 form 使用
+ */
+function tlearn_node_type_options() {
+  return node_type_get_names(); 
+}
+
+
+/*
+ * 收集所有可用於 node type 的 fields 給 form 使用 
+ * 
+ */
+function tlearn_field_options() {
+  $fields = field_read_fields();
+  
+  $options = array();
+  foreach ($fields as $name => $field) {
+    if (empty($field['entity_types']) || in_array('node', $field['entity_types'])) {
+      $options[$name] = $name; 
+    }
+  }
+  
+  asort($options);
+  
+  return $options; 
+}
+
+
+/*
+ * 收集指定 vocabulary 下的所有 term, 再加上「全部」，「都不要」
+ */
+function tlearn_term_options() {
+  $options = array();
+  
+  $options[TLEARN_OPTION_ALL] = '全部'; 
+  $options[TLEARN_OPTION_NONE] = '都不要'; 
+  
+  $vid = variable_get('tlearn_class_vocabulary', null);
+  if (empty($vid) || !($vocabulary = taxonomy_vocabulary_load($vid))) {
+    $m = '尚未設定課程指定的 Vocabulary，請先至 <a href="admin/config/tlearn/class">課程參數設定</a> 進行設定';
+    drupal_set_message($m, 'error'); 
+    return $options; 
+  }
+ 
+  
+  $terms = taxonomy_term_load_multiple(array(), array('vid' => $vid));
+  
+  foreach($terms as $tid => $term) {
+    $options[$tid] = $term->name;  
+  }
+  
+  return $options;  
+}
+
+
+function tlearn_role_options() {
+  // we don't use 'anonymous user' 
+  
+  $results = db_select('role', 'r')
+    ->fields('r')      
+    ->orderBy('weight', 'ASC')
+    ->condition('rid', 1, '<>')   // rid == 1, anonymous user 
+    ->execute()
+    ->fetchAllAssoc('rid');
+  
+  $options = array();
+  foreach($results as $rid => $role) {
+    $options[$rid] = $role->name;
+  }
+  
+  return $options; 
+}
+
+
+/* Sorting an array of objects by one or more object property
+ * ref: http://blog.amnuts.com/2011/04/08/sorting-an-array-of-objects-by-one-or-more-object-property/
+ * 
+ * 這個測試後，不 OK。拿掉此函數了。
+ */
+
+
+/* ref: http://php.net/manual/en/function.array-multisort.php#91638
+ * 
+ * 針對 array 中指定的元素，進行 array 的排序。用法參考上面連結。
+ * 
+ */
+function _tlearn_array_msort($array, $cols) {
+  $colarr = array();
+  foreach ($cols as $col => $order) {
+    $colarr[$col] = array();
+    foreach ($array as $k => $row) {
+      $colarr[$col]['_' . $k] = strtolower($row[$col]);
+    }
+  }
+  $eval = 'array_multisort(';
+  foreach ($cols as $col => $order) {
+    $eval .= '$colarr[\'' . $col . '\'],' . $order . ',';
+  }
+  $eval = substr($eval, 0, -1) . ');';
+  eval($eval);
+  $ret = array();
+  foreach ($colarr as $col => $arr) {
+    foreach ($arr as $k => $v) {
+      $k = substr($k, 1);
+      if (!isset($ret[$k]))
+        $ret[$k] = $array[$k];
+      $ret[$k][$col] = $array[$k][$col];
+    }
+  }
+  return $ret;
+}
+
+
+/*
+ * implementatin of hook_flush_caches() 
+ */
+function tlearn_flush_caches() {
+    return array(CACHE_TLEARN);
+}
+
+
+/* 
+ * Implementation of hook_uc_checkout_complete()
+ * 付款後，若購買課程內容類型，給予 user 開通課程
+ * 
+ * 其中購買者是 $order->uid (購買者), 不是 $account->uid (操作者，操作者可能是 admin)
+ * 
+ * 授權動作均會記錄到 watchdog 中。
+ * @return always true
+ */
+function tlearn_uc_checkout_complete($order, $account) {
+  $class_type = variable_get('tlearn_class_type'); 
+  $classno_field = variable_get('tlearn_class_nofield'); 
+  $duration_field = variable_get('tlearn_class_durationfield');
+
+  $now = date('Y-m-d H:i:s');    // MySql datetime 格式
+ 
+  foreach ($order->products as $product) {
+    $node = node_load($product->nid); 
+    
+    if (!strstr($class_type, $node->type)) {
+      continue;; 
+    }
+    
+    // 記錄到 tlearn_class_privilege
+
+    $items = field_get_items('node', $node, $classno_field);
+    if ($items)
+      $classno = array_shift(array_shift ($items)); 
+    else {
+      $classno = 'error'; 
+
+      watchdog('tlearn', 
+          '課程 (nid=%nid) 沒有有效的課程編號',
+          array('%nid' => $node->nid), 
+          WATCHDOG_ERROR, 
+          l('view','node/'.$node->nid));
+    }
+
+    $error = false; 
+
+    $items = field_get_items('node', $node, $duration_field);
+    if ($items) {
+      // 利用 strtotime 來完成
+      $value = array_shift(array_shift($items));
+      $value = trim($value);
+    }
+    else {
+      $error = true; 
+    }
+
+    if (preg_match('/^(\d)+$/', $value))
+        // 只有數字 -> 加上 'days' 
+        $value .= ' days'; 
+    else if (!preg_match('/^\d+(\s)*\D+$/', $value)) 
+      $error = true; 
+
+    if ($error) {
+      // 暫定給一個月，並提出 error log 
+      $value = '1 month';
+
+      watchdog('tlearn', 
+          'node %nid 欄位：有效天數欄位設定錯誤或未設. User (uid:%uid) 購買時暫定先給一佪月', 
+          array('%nid' => $node->nid, '%uid'=>$order->uid), 
+          WATCHDOG_ERROR, 
+          l('view','node/'. $node->nid));
+    }
+
+    $expire_time = date('Y-m-d H:i:s', strtotime($value)); 
+
+    $nid = db_insert('tlearn_class_privilege')
+      ->fields(array(
+        'uid' => $order->uid,
+        'classno' => $classno,
+        'start_date' => $now,
+        'expire_date' => $expire_time, 
+
+      ))
+      ->execute();
+  }
+  
+  return true;  
+}
+
+function _tlearn_visit_log($class, $section_node) {
+  global $user; 
+  
+  $chapord_field = variable_get('tlearn_chapord_field');
+  $sectionord_field = variable_get('tlearn_sectionord_field');
+  
+  $items = field_get_items('node', $section_node, $chapord_field); 
+  $chapord = array_shift(array_shift($items));
+  
+  $items = field_get_items('node', $section_node, $sectionord_field);
+  $sectionord = array_shift(array_shift($items)); 
+  
+  $nid = db_insert('tlearn_video_visit')
+    ->fields(array(
+      'uid' => $user->uid, 
+      'classno' => $class->classno, 
+      'chapord' => $chapord,
+      'sectionord' => $sectionord,
+      'time_visited' => date('Y-m-d H:i:s'),
+      'internet_ip' => $user->hostname,
+    ))
+    ->execute(); 
+}
+
