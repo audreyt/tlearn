@@ -261,7 +261,7 @@ function tlearn_classtype_permission($nid) {
       ->fields('tr')
       ->condition('rid', $roles, 'in')
       ->execute()
-      ->fetchAllAssoc('rid'); 
+      ->fetchAll(); 
 
   foreach($results as $result) {
 		// 這裡的 array 運算使用 '+=' 是錯誤的，同 integer key 會被忽略
@@ -298,10 +298,10 @@ function tlearn_singleclass_permission($nid) {
   
   $results = db_select('tlearn_class_privilege', 'tp')
       ->fields('tp')
-      ->condition('classno', $node->{$classno_field})
+      ->condition('nid', $node->nid)
       ->condition('uid', $user->uid)
-      ->condition('start_date', $d, '>')
-      ->condition('expire_date', $d, '<')
+      ->condition('start_date', $d, '<=')
+      ->condition('expire_date', $d, '>=')
       ->execute()
       ->fetch();
 
@@ -321,7 +321,8 @@ function tlearn_singleclass_permission($nid) {
  * 傳回節次的閱讀權限 
  */
 function tlearn_section_permission($section_nid) {
-  global $user;
+  global $user; 
+  
   $section_type = variable_get('tlearn_section_type');
   $demo_field = variable_get('tlearn_demoflag_field');
   
@@ -341,9 +342,9 @@ function tlearn_section_permission($section_nid) {
   if ($permission == TLEARN_PERMISSION_PROHIBIT) {
     $items = field_get_items('node', $node, $demo_field);
     $permission = empty($items) ? TLEARN_PERMISSION_PROHIBIT : array_shift(array_shift($items)); 
+    
     if ($permission == TLEARN_PERMISSION_MEMBER && !$user->uid) {
-      // Guest with member-only output ; prohibit
-      $permission = TLEARN_PERMISSION_PROHIBIT;
+      $permission = TLEARN_PERMISSION_PROHIBIT; 
     }
   }
   
@@ -450,7 +451,7 @@ function tlearn_set_class($class_nid) {
 
 
 /* 
- * 建立 section 相關變數, 
+ * 建立 section 相關版型用的變數, 
  * 
  * 傳回 array (render array) $vars 
  * tlearn_movieshow: 秀出影片，依設定的方法以及 user 的權限作不同的呈現, 佔滿所屬的 <div> 
@@ -793,7 +794,7 @@ function tlearn_troles_load_multiple($rids = array(), $conditions = array(), $re
       }
     }
 
-    $troles = $query->execute()->fetchAllAssoc('rid');
+    $troles = $query->execute()->fetchAll();
     
     foreach($troles as $rid => $trole) {
       $troles[$rid]->terms = explode(",", $trole->terms);
@@ -1074,7 +1075,7 @@ function tlearn_role_options() {
     ->orderBy('weight', 'ASC')
     ->condition('rid', 1, '<>')   // rid == 1, anonymous user 
     ->execute()
-    ->fetchAllAssoc('rid');
+    ->fetchAll();
   
   $options = array();
   foreach($results as $rid => $role) {
@@ -1142,79 +1143,96 @@ function tlearn_flush_caches() {
  * @return always true
  */
 function tlearn_uc_checkout_complete($order, $account) {
+  foreach ($order->products as $product) {
+    tlearn_class_authorize($order->uid, $product->nid);
+  }
+  return true;  
+}
+
+
+/*
+ * 確認是否記錄授與 $uid 課程 $nid 的權限
+ * 如果 $nid 不是課程的 node，不作授權記錄，傳回 false 
+ * 否則進行授權記錄，並傳回 true; 
+ */
+function tlearn_class_authorize($uid, $nid) {
   $class_type = variable_get('tlearn_class_type'); 
   $classno_field = variable_get('tlearn_class_nofield'); 
   $duration_field = variable_get('tlearn_class_durationfield');
 
   $now = date('Y-m-d H:i:s');    // MySql datetime 格式
  
-  foreach ($order->products as $product) {
-    $node = node_load($product->nid); 
-    
-    if (!strstr($class_type, $node->type)) {
-      continue;; 
-    }
-    
-    // 記錄到 tlearn_class_privilege
+  if (!($node = node_load($nid)))
+    return false; 
 
-    $items = field_get_items('node', $node, $classno_field);
-    if ($items)
-      $classno = array_shift(array_shift ($items)); 
-    else {
-      $classno = 'error'; 
-
-      watchdog('tlearn', 
-          '課程 (nid=%nid) 沒有有效的課程編號',
-          array('%nid' => $node->nid), 
-          WATCHDOG_ERROR, 
-          l('view','node/'.$node->nid));
-    }
-
-    $error = false; 
-
-    $items = field_get_items('node', $node, $duration_field);
-    if ($items) {
-      // 利用 strtotime 來完成
-      $value = array_shift(array_shift($items));
-      $value = trim($value);
-    }
-    else {
-      $error = true; 
-    }
-
-    if (preg_match('/^(\d)+$/', $value))
-        // 只有數字 -> 加上 'days' 
-        $value .= ' days'; 
-    else if (!preg_match('/^\d+(\s)*\D+$/', $value)) 
-      $error = true; 
-
-    if ($error) {
-      // 暫定給一個月，並提出 error log 
-      $value = '1 month';
-
-      watchdog('tlearn', 
-          'node %nid 欄位：有效天數欄位設定錯誤或未設. User (uid:%uid) 購買時暫定先給一佪月', 
-          array('%nid' => $node->nid, '%uid'=>$order->uid), 
-          WATCHDOG_ERROR, 
-          l('view','node/'. $node->nid));
-    }
-
-    $expire_time = date('Y-m-d H:i:s', strtotime($value)); 
-
-    $nid = db_insert('tlearn_class_privilege')
-      ->fields(array(
-        'uid' => $order->uid,
-        'classno' => $classno,
-        'start_date' => $now,
-        'expire_date' => $expire_time, 
-
-      ))
-      ->execute();
-  }
+  if (!strstr($class_type, $node->type))
+    return false; 
   
-  return true;  
+  // 記錄到 tlearn_class_privilege
+
+  $items = field_get_items('node', $node, $classno_field);
+  if ($items)
+    $classno = array_shift(array_shift ($items)); 
+  else {
+    $classno = 'error'; 
+
+    watchdog('tlearn', 
+        '採權給 uid = @uid, 課程 nid=@nid 時，該課程沒有有效的課程編號',
+        array('@uid' => $uid, '@nid' => $nid), 
+        WATCHDOG_ERROR, 
+        l(t('edit'),'node/'.$nid));
+  }
+
+  $error = false; 
+
+  $items = field_get_items('node', $node, $duration_field);
+  if ($items) {
+    // 利用 strtotime 來完成
+    $value = array_shift(array_shift($items));
+    $value = trim($value);
+  }
+  else {
+    $error = true; 
+  }
+
+  if (preg_match('/^(\d)+$/', $value))
+      // 只有數字 -> 加上 'days' 
+      $value .= ' days'; 
+  else if (!preg_match('/^\d+(\s)*\D+$/', $value)) 
+    $error = true; 
+
+  if ($error) {
+    // 暫定給一個月，並提出 error log 
+    $value = '1 month';
+
+    watchdog('tlearn', 
+        'node @nid 欄位：有效天數欄位設定錯誤或未設. User (uid:@uid) 購買時暫定先給一佪月', 
+        array('@nid' => $nid, '@uid' => $uid), 
+        WATCHDOG_ERROR, 
+        l(t('edit'),'node/'. $nid));
+  }
+
+  $expire_time = date('Y-m-d H:i:s', strtotime($value)); 
+
+  $nid = db_insert('tlearn_class_privilege')
+    ->fields(array(
+      'uid' => $uid,
+      'nid' => $nid,
+      'classno' => $classno,
+      'start_date' => $now,
+      'expire_date' => $expire_time, 
+
+    ))
+    ->execute();  
+  
+  return true; 
 }
 
+
+
+/*
+ * 授權者上課，就要有記錄
+ */
 function _tlearn_visit_log($class, $section_node) {
   global $user; 
   
@@ -1230,6 +1248,7 @@ function _tlearn_visit_log($class, $section_node) {
   $nid = db_insert('tlearn_video_visit')
     ->fields(array(
       'uid' => $user->uid, 
+      'nid' => $section_node->nid, 
       'classno' => $class->classno, 
       'chapord' => $chapord,
       'sectionord' => $sectionord,
@@ -1239,3 +1258,63 @@ function _tlearn_visit_log($class, $section_node) {
     ->execute(); 
 }
 
+
+/* 
+ * 秀出 $uid 購買的所有單一課程
+ * 此輸出為一 render array 
+ * 
+ * 在 content body 或是 Panel's pane 裡，使用 php filter，寫下 
+ *    <?php print tlearn_user_classes($uid 的編號); ?>
+ * 即可得到輸出  
+ */
+function tlearn_user_classes($uid) {
+  
+  $now = date('Y-m-d H:i:s'); 
+  
+  $query = db_select('tlearn_class_privilege', 'cp')
+      ->fields('cp')
+      ->condition('uid', $uid)
+      ->orderBy('start_date', 'DESC')
+      ->extend('PagerDefault')     //Pager Extender
+          ->limit(15);               //10 results per page     
+
+  $results = $query->execute(); 
+  
+  $rows = array(); 
+  foreach($results as $result) {
+    $node = node_load($result->nid); 
+    if ($result->expire_date < $now) 
+      $expiration = '已到期'; 
+    else 
+      $expiration = ''; 
+    
+    $rows[] = array(
+      'data' => array(
+        l($node->title, 'node/' . $node->nid), 
+        $result->start_date, 
+        $result->expire_date, 
+        $expiration, 
+      ),
+    );
+  }
+  
+  $header = array(
+    array('data' => '課程名稱'), 
+    array('data' => '起始日期'),
+    array('data' => '到期日期'), 
+    array('data' => '是否到期'), 
+  ); 
+  
+  $output = theme('table',
+      array(
+        'header' => $header, 
+        'rows' => $rows,
+        'caption' => '<h3>使用者擁有的課程權限清單</h3>',
+        'empty' => '您目前沒有單一課程的權限',
+      )
+  ); 
+  
+  $output .= theme('pager', array('tags' => array()));
+  
+  return $output; 
+}

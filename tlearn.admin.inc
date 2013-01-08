@@ -14,6 +14,7 @@
  * @todo 要不要增加 cloudfront 設定測試的功能？ 
  */
 function tlearn_admin_tlearn($form, &$form_state) {
+    
   $form = array();
   
   $form['markup0'] = array(
@@ -67,7 +68,8 @@ function tlearn_admin_tlearn($form, &$form_state) {
   $form['tlearn_default_options']['tlearn_class_durationfield'] = array(
     '#type' => 'select',
     '#title' => '購買時，課程有效天數欄位', 
-    '#options' => tlearn_field_options(),    
+    '#options' => tlearn_field_options(),  
+    '#empty_value' => 0, 
     '#description' => $description,
     '#default_value' => variable_get('tlearn_class_durationfield', null),    
   );

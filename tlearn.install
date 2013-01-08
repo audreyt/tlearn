@@ -46,6 +46,11 @@ function tlearn_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'nid' => array(
+        'description' => t('section nid'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+      ),
       'classno' => array(
         'type' => 'varchar',
         'length' => 255,
@@ -53,7 +58,6 @@ function tlearn_schema() {
         'default' => '',
         'description' => 'class no',
       ), 
-      
       'chapord' => array(
         'type' => 'varchar',
         'length' => 10,
@@ -106,6 +110,12 @@ function tlearn_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'nid' => array(
+        'description' => t('class nid'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
       'classno' => array(
         'description' => 'class no',
         'type' => 'varchar',
@@ -128,8 +138,8 @@ function tlearn_schema() {
     ),
     'primary key' => array('cpid'),
     'indexes' => array(
-      'license' => array('classno', 'uid'),
-      'privilege' => array('uid', 'classno'),
+      'license' => array('nid', 'uid'),
+      'privilege' => array('uid', 'nid'),
     ),
   );
   
@@ -142,5 +152,5 @@ function tlearn_schema() {
 
 function tlearn_uninstall() {
   // @todo remember to remove the comment marked below after finishing development 
-//  db_query("DELETE FROM {variable} WHERE name LIKE 'tlearn_%%'");  
+  db_query("DELETE FROM {variable} WHERE name LIKE 'tlearn_%%'");  
 }
