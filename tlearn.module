@@ -818,11 +818,11 @@ function tlearn_troles_load_multiple($rids = array(), $conditions = array(), $re
       }
     }
 
-    $troles = $query->execute()->fetchAll();
+    $troles = $query->execute()->fetchAllAssoc('rid');
     
-    foreach($troles as $rid => $trole) {
-      $troles[$rid]->terms = explode(",", $trole->terms);
-    }
+//    foreach($troles as $rid => $trole) {
+//      $troles[$rid]->terms = explode(",", $trole->terms);
+//    }
   }
   
   return $troles;
@@ -877,9 +877,11 @@ function tlearn_trole_load($rid) {
 /* 
  * 傳回 $terms array 中各個 tid 名稱總成的字串  
  * 
- * $terms: array 
+ * $terms: 字串，其中 term 以 comma 隔開  
  */
-function tlearn_terms_desc($terms) {
+function tlearn_terms_desc($terms_str) {
+  
+  $terms = explode(',', $terms_str); 
   
   $desc = ''; 
   
@@ -891,8 +893,10 @@ function tlearn_terms_desc($terms) {
   }
   else {
     foreach ($terms as $key => $value) {
-      $term = taxonomy_term_load($value);
-      $desc .= $term->name . ", "; 
+      if ($value) {
+        $term = taxonomy_term_load($value);
+        $desc .= $term->name . ", "; 
+      }
     }
   }
   
@@ -1323,19 +1327,20 @@ function tlearn_user_classes($uid) {
   }
   
   $header = array(
-    array('data' => '課程名稱'), 
-    array('data' => '起始日期'),
-    array('data' => '到期日期'), 
-    array('data' => '是否到期'), 
+    array('data' => t('Class name')), 
+    array('data' => t('Begin date')),
+    array('data' => t('Expire date')),
+    array('data' => t('Expired?')), 
   ); 
   
-  $msg=  variable_get('tlearn_msg_nosingleclass'); 
+  $msgfmtd =  variable_get('tlearn_msgfmtd_nosingleclass'); 
+
   $output = theme('table',
       array(
         'header' => $header, 
         'rows' => $rows,
         'caption' => '<h3>使用者擁有的課程權限清單</h3>',
-        'empty' => '您目前沒有單一課程的權限',
+        'empty' => check_markup($msgfmtd['value'], $msgfmtd['format']),
       )
   ); 
   
@@ -1395,5 +1400,3 @@ function tlearn_file_download($uri) {
   $_SESSION['tlearn-permission'] = TLEARN_PERMISSION_PROHIBIT; 
   return -1; 
 }
-
-

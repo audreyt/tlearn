@@ -660,7 +660,7 @@ function tlearn_admin_troles($form) {
 
       $form[$trole->rid]['terms'] = array('#markup' => tlearn_terms_desc($trole->terms));
       
-      // 二個操作項目，要放在同一欄，因此後面要呼叫 theme 函數，幫化表格化，同時置放為一欄
+      // 二個操作項目，要放在同一欄，因此後面要呼叫 theme 函數，幫忙表格化，同時置放為一欄
       $form[$trole->rid]['edit'] = array(
         '#type' => 'link',
         '#title' => t('edit'),
@@ -680,6 +680,7 @@ function tlearn_admin_troles($form) {
     $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
   }
   elseif (!empty($troles)) {
+    // @todo 這個有錯，這裡已沒有 $trole  
     $form[$trole->rid]['weight'] = array('#type' => 'value', '#value' => 0);
   }
   return $form;
@@ -727,14 +728,6 @@ function tlearn_admin_trole_form($form, &$form_state, $trole=array()) {
 }
 
 
-
-
-function tlearn_admin_trole_form_validate($form, &$form_state) {
-  
-}
-
-
-
 function tlearn_admin_trole_form_submit($form, &$form_state) {
 
 //  dpm($form_state);
@@ -744,7 +737,6 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
   $terms = array(); 
   $choices = array_values($form_state['values']['terms']); 
   
-  
   if (in_array(TLEARN_OPTION_ALL, $choices)) {
     $terms = array(TLEARN_OPTION_ALL);
   } 
@@ -753,9 +745,7 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
   }  
   else {
     foreach($choices as $value) {
-      if ($value) {
-        $terms[] = $value; 
-      }
+      $terms[] = $value; 
     }
   }
   
@@ -770,7 +760,7 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
   db_merge('tlearn_roles')
     ->key(array('rid' => $rid))
     ->fields(array(
-        'terms' => implode(",", $terms),
+        'terms' => implode(",", $terms), 
     ))
     ->execute();   
 
@@ -820,16 +810,6 @@ function tlearn_admin_trole_delete_submit($form, &$form_state) {
  * 訊息
  */
 
-
-
-
-
-
-
-/***********************************
- * Misc 
- */
-
 function tlearn_admin_message($form, &$form_state) {
     
   $form = array();
@@ -840,16 +820,44 @@ function tlearn_admin_message($form, &$form_state) {
     '#collapsible' => FALSE,
     '#description' => 'Tlearn 相關訊息設定。',
   );  
-  
+
+  // tlearn_user_classes()
   $msg = '您目前沒有單一課程的權限';
-  $form['tlearn_default_options']['tlearn_msg_nosingleclass'] = array(
-    '#type' => 'textarea',
+  if (!($msgfmtd = variable_get('tlearn_msgfmtd_nosingleclass', null))) {
+    $msgfmtd = array(
+      'value' => $msg, 
+      'format' => 'full_html', 
+    );
+  }
+  $form['tlearn_msgfmtd_nosingleclass'] = array(
+    '#type' => 'text_format',
     '#title' => '課程清單中沒有項目時的訊息', 
     '#rows' => 4, 
+    '#format' => $msgfmtd['format'], 
     '#description' => '',
-    '#default_value' => variable_get('tlearn_msg_nosingleclass', $msg),    
+    '#default_value' => $msgfmtd['value'],    
+  );
+  
+  
+  // 閱讀影片卻沒有權限時的訊息 tlearn_movieshow_ra() 
+  $msg = '很抱歉！您沒有閱讀影片的權限。';
+  if (!($msgfmtd = variable_get('tlearn_msgfmtd_pohibit', null))) {
+    $msgfmtd = array(
+      'value' => $msg, 
+      'format' => 'full_html', 
+    );
+  }
+  $form['tlearn_msgfmtd_pohibit'] = array(
+    '#type' => 'text_format',
+    '#title' => '閱讀影片卻沒有權限時的訊息', 
+    '#rows' => 4, 
+    '#format' => $msgfmtd['format'], 
+    '#description' => '',
+    '#default_value' => $msgfmtd['value'],    
   );
   
   
   return system_settings_form($form);
 }
+
+

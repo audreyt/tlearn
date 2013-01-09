@@ -124,13 +124,13 @@ function tlearn_schema() {
         'default' => '',
       ),
       'start_date' => array(
-        'description' => t('起始日期'),
+        'description' => t('Begin date'),
         'mysql_type' => 'datetime',      // The equivalent MySQL data type
         'pgsql_type' => 'timestamp',     // The equivalent PostgreSQL data type'
         'not null' => TRUE,
       ),
       'expire_date' => array(
-        'description' => t('結束日期'),
+        'description' => t('End date'),
         'mysql_type' => 'datetime',      // The equivalent MySQL data type
         'pgsql_type' => 'timestamp',     // The equivalent PostgreSQL data type'
         'not null' => TRUE,
@@ -149,6 +149,24 @@ function tlearn_schema() {
 
   return $schema;
 }
+
+function tlearn_install() {
+  // tlearn_user_classes()
+  $msgfmtd = array(
+    'value' => '您目前沒有單一課程的權限', 
+    'format' => 'full_html', 
+  );
+  variable_set('tlearn_msgfmtd_nosingleclass', $msgfmtd); 
+  
+  // 閱讀影片卻沒有權限時的訊息 tlearn_movieshow_ra() 
+  $msgfmtd = array(
+    'value' => '很抱歉！您沒有閱讀影片的權限。', 
+    'format' => 'full_html', 
+  );
+  variable_set('tlearn_msgfmtd_pohibit', $msgfmtd); 
+
+}
+
 
 function tlearn_uninstall() {
   // @todo remember to remove the comment marked below after finishing development 
