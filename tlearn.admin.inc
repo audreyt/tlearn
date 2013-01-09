@@ -5,6 +5,16 @@
  * Admin page callbacks for the tlearn module.
  */
 
+function _tlearn_check_private_folder() {
+  $private_path = variable_get('file_private_path'); 
+  if (empty($private_path)) {
+    drupal_set_message(
+        format_string('在使用 Tlearn 模組之前，您必需先啟動 Drupal 的 !link', 
+            array('!link' => l('私人目錄', 'admin/config/media/file-system'))), 
+        'warning'); 
+  }
+}
+
 
 /*
  * 課程參數設定
@@ -14,7 +24,6 @@
  * @todo 要不要增加 cloudfront 設定測試的功能？ 
  */
 function tlearn_admin_tlearn($form, &$form_state) {
-    
   $form = array();
   
   $form['markup0'] = array(
@@ -32,7 +41,7 @@ function tlearn_admin_tlearn($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => '課程內容類型', 
     '#required' => true, 
-    '#description' => '請選擇課程所使用的內容類型, 可指定多個, 利用半形逗點隔開。',
+    '#description' => '請選擇課程所使用的內容類型機器名稱, 可指定多個, 利用半形逗點隔開。',
     '#default_value' => variable_get('tlearn_class_type', null),    
   );
 
@@ -74,7 +83,18 @@ function tlearn_admin_tlearn($form, &$form_state) {
     '#default_value' => variable_get('tlearn_class_durationfield', null),    
   );
   
-  $description = '如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。';
+  $description = 
+  '如果課程附帶有下載檔案，並且要依據課程權限提供下載，請填寫課程的下載欄位。<span style="color:red;">注意：檔案存放目錄必需是在 private://tlearn/ 底下。</span>';
+  $form['tlearn_default_options']['tlearn_class_downloadfield'] = array(
+    '#type' => 'select',
+    '#title' => '課程下載檔案欄位', 
+    '#options' => tlearn_field_options(),  
+    '#empty_value' => 0, 
+    '#description' => $description,
+    '#default_value' => variable_get('tlearn_class_downloadfield', null),    
+  );
+  
+  $description = '如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。路徑必需是在 private://tlearn 底下。';
   $form['tlearn_site_folder'] = array(
     '#type' => 'fieldset',
     '#title' => '課程影片 Site 路徑設定',
@@ -86,10 +106,9 @@ function tlearn_admin_tlearn($form, &$form_state) {
   $form['tlearn_site_folder']['tlearn_site_path'] = array(
     '#type' => 'textfield',
     '#title' => 'drupal site 內課程影片目錄', 
-    '#description' => '請填寫影片放在 site 中的相對路徑，例如 sites/default/files/class/movie，最後不要再加斜線。' .
-      '目錄中，請設定 .htaccess 檔案，以控制該目錄不被外部讀取。參考 <a href="http://drupal.org/node/540754">Restrict specific folders from public download (via .htaccess)</a>', 
+    '#description' => '請填寫影片放在 site 中的路徑，例如路徑是 private://tlearn/class/videos 時，請填寫 class/videos，前後不要再加斜線。', 
     '#default_value' => variable_get('tlearn_site_path', null),        
-  );
+    );
 
   
   $description = '如果您準備利用 Amazon AWS 的 Cloudfront 作為影片播放方法之一，請填寫本區資料。';
@@ -231,8 +250,39 @@ function tlearn_admin_tlearn_validate($form, &$form_state) {
       }
     }
   }
+
   
-  // sitefolder 在節次設定時，再檢查  
+  /* 
+   * 課程下載檔案欄位檢查 
+   */
+  $download_field = $form_state['values']['tlearn_class_downloadfield']; 
+  if (!empty($download_field)) {
+    $priavate_path = variable_get('file_private_path'); 
+    if (empty($priavate_path)) {
+      form_set_error('', 
+          format_string('在定義課程下載欄位之前，您必需先啟動 Drupal 的 !link', 
+              array('!link' => l('私人目錄', 'admin/config/media/file-system')))); 
+      $error = true; 
+    }
+  }
+  
+  // 檢查 sitefolder 相關設定: tlearn_site_path 
+  $folder_path = $form_state['values']['tlearn_site_path']; 
+  if (!empty($folder_path)) {
+    $form_state['values']['tlearn_site_path'] = trim($folder_path); 
+    
+    // 是否存在此目錄
+    $folder_path = rtrim(trim($folder_path), '/\\');
+    
+    $folder_uri = 'private://tlearn/' . $folder_path; 
+    
+    if (!file_prepare_directory($folder_uri)) {
+      form_set_error('tlearn_site_path', 
+          format_string('網站內部目錄: !path 不正確 (沒有此目錄, 或 drupal 無讀寫權限)',
+              array('!path' => $folder_path))); 
+      $error = true; 
+    }
+  }
   
   // AWS 相關設定，在節次設定時，再檢查 
 }
@@ -298,15 +348,6 @@ function tlearn_admin_section($form, &$form_state) {
     '#default_value' => variable_get('tlearn_chapord_field', null),    
   );
 
-  $form['tlearn_default_options']['tlearn_chapname_field'] = array(
-    '#type' => 'select',
-    '#title' => '章次名稱欄位', 
-    '#empty_value' => 0, 
-    '#options' => tlearn_field_options(),    
-    '#description' => '請選擇章次名稱欄位', 
-    '#default_value' => variable_get('tlearn_chapname_field', null),    
-  );
-  
   $form['tlearn_default_options']['tlearn_sectionord_field'] = array(
     '#type' => 'select',
     '#title' => '節次編號欄位', 
@@ -416,9 +457,6 @@ function tlearn_admin_section($form, &$form_state) {
 
 
 /*
- * @todo 檢查節次設定的輸入
- * 
- * 重點：
  * 檢查各個欄位是否在指定的節次內容類型中 
  * 
  */
@@ -569,19 +607,12 @@ function tlearn_admin_section_validate($form, &$form_state) {
   }
 
   if ($sitefoldered) {
-    // 檢查 sitefoler 相關設定: tlearn_site_path (非此 form)
-     
-    // 是否存在此目錄
-    $folder_path = rtrim(trim(variable_get('tlearn_site_path')), '/\\');
-    
-    if (!is_dir($folder_path)) {
-      form_set_error('', 
-        format_string('無法使用網站目錄進行播放。網站內部目錄: @folder 不存在。請先至課程設定進行更正。',
-          array('@folder'=>$folder_path)));
+    // 檢查 sitefolder 相關設定: tlearn_site_path (非此 form)
+    $folder_path = variable_get('tlearn_site_path'); 
+    if (empty($folder_path)) {
+      form_set_error('', '您還沒有設定課程影片的網站內部目錄，請先至課程參數設定處理。');
       $error = true; 
     }
-
-    // @todo 是否可由 apache 公開讀取
   }
  
   if ($cloudfronted) {
@@ -653,9 +684,6 @@ function tlearn_admin_troles($form) {
   }
   return $form;
 }
-
-
-
 
 
 /*
@@ -789,6 +817,39 @@ function tlearn_admin_trole_delete_submit($form, &$form_state) {
 
 
 /***********************************
+ * 訊息
+ */
+
+
+
+
+
+
+
+/***********************************
  * Misc 
  */
 
+function tlearn_admin_message($form, &$form_state) {
+    
+  $form = array();
+  
+  $form['tlearn_default_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => '相關訊息設定',
+    '#collapsible' => FALSE,
+    '#description' => 'Tlearn 相關訊息設定。',
+  );  
+  
+  $msg = '您目前沒有單一課程的權限';
+  $form['tlearn_default_options']['tlearn_msg_nosingleclass'] = array(
+    '#type' => 'textarea',
+    '#title' => '課程清單中沒有項目時的訊息', 
+    '#rows' => 4, 
+    '#description' => '',
+    '#default_value' => variable_get('tlearn_msg_nosingleclass', $msg),    
+  );
+  
+  
+  return system_settings_form($form);
+}

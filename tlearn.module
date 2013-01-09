@@ -139,6 +139,18 @@ function tlearn_menu() {
     'file' => 'tlearn.admin.inc',
   ); 
   
+  // roles 相關設定功能
+  $items['admin/config/tlearn/message'] = array(
+    'title' => '訊息設定',
+    'type' => MENU_LOCAL_TASK,   
+    'weight' => 40, 
+    'description' => '設定各種 Tlearn 相關訊息。',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tlearn_admin_message'),
+    'access arguments' => array('administer class settings'),  
+    'file' => 'tlearn.admin.inc',
+  ); 
+  
   // 其它
   /* 關於影片播放的 theme 函數，其權限控制不在 hoook_menu() 中處理，而是依照 tlearn 管理
    * 介面的參數設定，進行權限的判斷。
@@ -247,8 +259,7 @@ function tlearn_classtype_permission($nid) {
 	$terms_want = array();
   $items = field_get_items('node', $node, $term_field);
 	foreach($items as $item) {
-		//$terms_want += array_values($item);  這個是錯的
-		$terms_want = array_merge($terms_want, array_values($item)); 
+    $terms_want[] = $item['tid'];
 	}
 //	dpm($terms_want);
   
@@ -458,6 +469,7 @@ function tlearn_set_class($class_nid) {
  * tlearn_next_section (with link)
  * tlearn_prev_section (with link)
  * tlearn_class       (with link)
+ * tlearn_class_node  (class node 變數) 
  * tlearn_permission  (1: 免費閱讀, 2: 會員免費閱讀, 9: 授權閱讀, 0:無權限) 
  * tlearn_method      (0: 無, 1: youtube, 2: 網站內部目錄, 3: Cloudfront) 
  * 
@@ -479,6 +491,9 @@ function tlearn_section_vars($section_nid) {
     'tlearn_next_section' => '',
     'tlearn_prev_section' => '', 
     'tlearn_class' => '', 
+    'tlearn_class_node' => null, 
+    'tlearn_permission' => TLEARN_PERMISSION_PROHIBIT,
+    'tlearn_method' => TLEARN_USE_NONE, 
   ); 
   
   if (!($section_node = node_load($section_nid))) {
@@ -499,7 +514,7 @@ function tlearn_section_vars($section_nid) {
    */
   $class = tlearn_fetch_class($class_node->nid); 
   if (empty($class)) return $vars;
-  
+   
   $sections = $class->sections;
   if (empty($sections)) return $vars; 
   
@@ -537,6 +552,7 @@ function tlearn_section_vars($section_nid) {
     $prev= null; 
   }
   
+
   if (empty($prev))
     $str = '無';
   else {
@@ -561,7 +577,11 @@ function tlearn_section_vars($section_nid) {
     '#markup' => l($class_node->title, 'node/' . $class_node->nid), 
   );
   
+  
+  // 取得 tlearn_movieshow, tlearn_permission, tlearn_method 
   $vars['tlearn_movieshow'] = tlearn_movieshow_ra($vars, $class, $section_node);
+
+  $vars['tlearn_class_node'] = $class_node;
   
   return $vars; 
 }
@@ -725,8 +745,9 @@ function tlearn_movieshow_sitefolder($permission, $class, $section_node) {
   $items = field_get_items('node', $section_node, $movie_field);
   $moviename = array_shift(array_shift($items)); 
   
-  $movieurl = $base_url . '/' . $sitefolder . '/' . $class->classno . '/' . $moviename;  
-//  $movieurl = $sitefolder . '/' . $class->classno . '/' . $moviename;  
+//  $movieurl = $base_url . '/' . $sitefolder . '/' . $class->classno . '/' . $moviename;  
+  
+  $movieurl = $base_url . '/system/files/tlearn/' . $sitefolder . '/' . $class->classno . '/' . $moviename;   
     
   $configs = array(
     'clip' => array(
@@ -736,6 +757,9 @@ function tlearn_movieshow_sitefolder($permission, $class, $section_node) {
   );
   
   $output = theme('flowplayer', array('config' => $configs)); 
+  
+  // 留下記號，下載時檢查 
+  $_SESSION['tlearn-permission'] = $permission; 
   
   // 上課記錄
   if ($permission == TLEARN_PERMISSION_AUTHORIZED) {
@@ -1146,7 +1170,7 @@ function tlearn_uc_checkout_complete($order, $account) {
   foreach ($order->products as $product) {
     tlearn_class_authorize($order->uid, $product->nid);
   }
-  return true;  
+    return true;  
 }
 
 
@@ -1305,6 +1329,7 @@ function tlearn_user_classes($uid) {
     array('data' => '是否到期'), 
   ); 
   
+  $msg=  variable_get('tlearn_msg_nosingleclass'); 
   $output = theme('table',
       array(
         'header' => $header, 
@@ -1318,3 +1343,57 @@ function tlearn_user_classes($uid) {
   
   return $output; 
 }
+
+
+/*
+ * implementation of hook_file_download_access($file_item, $entity_type, $entity); 
+ * 借用這個地方，作下載的記號 
+ */
+function tlearn_file_download_access($file_item, $entity_type, $entity) {
+  if ($entity_type <> 'node')
+    return; 
+  
+  $class_types = variable_get('tlearn_class_type');
+  if (!strstr($class_types, $entity->type)) {
+    $_SESSION['tlearn-permission'] = TLEARN_PERMISSION_PROHIBIT; 
+  } else {
+    $permission = tlearn_class_permission($entity->nid);
+    $_SESSION['tlearn-permission'] = $permission;
+  }
+}
+
+/*
+ * 可惜這個 hook 撞到 drupal < 7.18 的 bug，不能用。
+ * function tlearn_file_download_access_alter(&$grants, $file_item, $entity_type, $entity);
+ */
+
+/*
+ * Tlearn 下載功能控制
+ * 1. 網站內部影片, 2. 課程檔案 (file field) 下載 
+ * 不管是哪一個，都會在 $_SESSION 中留下 class_nid 
+ * 
+ */
+function tlearn_file_download($uri) {
+  //dpm($uri); 
+  
+  if (!strstr($uri, 'private://tlearn/')) 
+      return; 
+  
+  // 以下，這個檔案是 tlearn 該管的  
+  
+  if (!isset($_SESSION['tlearn-permission'])) 
+    return -1; 
+  
+  $permission = $_SESSION['tlearn-permission']; 
+  if ($permission) {
+    $_SESSION['tlearn-permission'] = TLEARN_PERMISSION_PROHIBIT; 
+    
+    $mime = file_get_mimetype($uri);
+    return array('Content-Type' => $mime);    
+  }
+
+  $_SESSION['tlearn-permission'] = TLEARN_PERMISSION_PROHIBIT; 
+  return -1; 
+}
+
+
