@@ -656,7 +656,7 @@ function tlearn_admin_troles($form) {
     foreach ($troles as $trole) {
       $form[$trole->rid]['#role'] = $trole;
       $form[$trole->rid]['name'] = array('#markup' => check_plain($trole->name));
-      $form[$trole->rid]['weight'] = array('#type' => 'weight', '#delta' => 10, '#default_value' => $trole->weight);
+      // $form[$trole->rid]['weight'] = array('#type' => 'weight', '#delta' => 10, '#default_value' => $trole->weight);
 
       $form[$trole->rid]['terms'] = array('#markup' => tlearn_terms_desc($trole->terms));
       
@@ -674,15 +674,8 @@ function tlearn_admin_troles($form) {
     }
   }
 
-  // Only make this form include a submit button and weight if more than one
-  // category exists.
-  if (count($troles) > 1) {
-    $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
-  }
-  elseif (!empty($troles)) {
-    // @todo 這個有錯，這裡已沒有 $trole  
-    $form[$trole->rid]['weight'] = array('#type' => 'value', '#value' => 0);
-  }
+  // Use the role-weights in /admin/people/permissions/roles
+  // The admin can re-order the form rows by going there to reorder.
   return $form;
 }
 
@@ -729,9 +722,6 @@ function tlearn_admin_trole_form($form, &$form_state, $trole=array()) {
 
 
 function tlearn_admin_trole_form_submit($form, &$form_state) {
-
-//  dpm($form_state);
-  
   $form_state['redirect'] = 'admin/config/tlearn/troles'; 
   
   $terms = array(); 
@@ -745,7 +735,9 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
   }  
   else {
     foreach($choices as $value) {
-      $terms[] = $value; 
+      if ($value) {
+        $terms[] = $value; 
+      }
     }
   }
   
@@ -760,6 +752,7 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
   db_merge('tlearn_roles')
     ->key(array('rid' => $rid))
     ->fields(array(
+        'rid' => $rid,
         'terms' => implode(",", $terms), 
     ))
     ->execute();   

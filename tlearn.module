@@ -819,10 +819,6 @@ function tlearn_troles_load_multiple($rids = array(), $conditions = array(), $re
     }
 
     $troles = $query->execute()->fetchAllAssoc('rid');
-    
-//    foreach($troles as $rid => $trole) {
-//      $troles[$rid]->terms = explode(",", $trole->terms);
-//    }
   }
   
   return $troles;
@@ -895,7 +891,10 @@ function tlearn_terms_desc($terms_str) {
     foreach ($terms as $key => $value) {
       if ($value) {
         $term = taxonomy_term_load($value);
-        $desc .= $term->name . ", "; 
+        if ($desc) {
+          $desc .= ", ";
+        }
+        $desc .= $term->name;
       }
     }
   }
@@ -1107,7 +1106,7 @@ function tlearn_role_options() {
   
   $options = array();
   foreach($results as $rid => $role) {
-    $options[$rid] = $role->name;
+    $options[$role->rid] = $role->name;
   }
   
   return $options; 

@@ -5,21 +5,6 @@
  * theming functions for the tlearn module.
  */
 
-/**
- * Form submit callback for the tlearn troles.
- */
-//function tlearn_admin_troles_submit($form, &$form_state) {
-//  foreach ($form_state['values'] as $rid => $category) {
-//    if (is_numeric($rid) && $form[$rid]['#trole']->weight != $trole['weight']) {
-//      $form[$rid]['#trole']->weight = $trole['weight'];
-//      tlearn_trole_save($form[$rid]['#trole']);
-//    }
-//  }
-//  drupal_set_message(t('Your configuration has been saved.'));
-//}
-
-
-
 function theme_tlearn_admin_troles($variable) {
 
   $form = $variable['form'];
@@ -44,16 +29,11 @@ function theme_tlearn_admin_troles($variable) {
       $row[] = drupal_render($trole['edit']);
       $row[] = drupal_render($trole['delete']);
       
-      $rows[] = array('data' => $row, 'class' => array('draggable'));
+      $rows[] = array('data' => $row);
     }
   }
 
   $header = array(t('Role'));
-
-  if (isset($form['submit'])) {
-    $header[] = t('Weight');
-    drupal_add_tabledrag('tlearn-trole', 'order', 'self', 'tlearn-role-weight');
-  }
 
   $header[] = '閱讀權限'; 
   $header[] = array('data' => '操作', 'colspan' => '2');
