@@ -120,13 +120,13 @@ function tlearn_admin_tlearn($form, &$form_state) {
   );  
   $form['tlearn_setting_cloudfront']['tlearn_cloudfront_domain'] = array(
     '#type' => 'textfield',
-    '#title' => 'AWS Cloudfront Domain', 
+    '#title' => t('AWS Cloudfront Domain'), 
     '#description' => '請填寫您的 cloudfront 的 domain name (不含 http 字頭，不含最後的斜線)', 
     '#default_value' => variable_get('tlearn_cloudfront_domain', null),        
   );
   $form['tlearn_setting_cloudfront']['tlearn_cloudfront_key_filename'] = array(
     '#type' => 'textfield',
-    '#title' => 'AWS Cloudfront Key File', 
+    '#title' => t('AWS Cloudfront Key File'), 
     '#description' => '請填寫您的 key file 放置的完整路徑（含檔名）。此路徑請置於 Apache 無法存取的地方。' . 
         '不要放在 Drupal 網站裡。' .
         'Key File 請參考 <a href="http://docs.amazonwebservices.com/AWSSecurityCredentials/1.0/AboutAWSCredentials.html#KeyPairs">Amazon CloudFront Key Pairs</a>.',
@@ -134,7 +134,7 @@ function tlearn_admin_tlearn($form, &$form_state) {
   );
   $form['tlearn_setting_cloudfront']['tlearn_cloudfront_pair_id'] = array(
     '#type' => 'textfield',
-    '#title' => 'AWS Cloudfront Key Pair id', 
+    '#title' => t('AWS Cloudfront Key Pair id'), 
     '#description' => '請填寫您的 Cloudfront Key Pair id',
     '#default_value' => variable_get('tlearn_cloudfront_pair_id', null),        
   );
@@ -354,7 +354,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#required' => true, 
     '#empty_value' => 0, 
     '#options' => tlearn_field_options(),    
-    '#description' => '請選擇章次編號欄位', 
+    '#description' => '請選擇節次編號欄位', 
     '#default_value' => variable_get('tlearn_sectionord_field', null),    
   );
 
@@ -367,7 +367,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => '影片欄位設定',
     '#collapsible' => FALSE,
-    '#description' => '影片欄位設定。',
+    '#description' => '請選擇影片檔名的欄位。',
   );  
   
   $form['tlearn_moviefield_options']['tlearn_youtube_field'] = array(
@@ -420,7 +420,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#type' => 'radios',
     '#title' => '免費閱讀影片處理', 
     '#options' => array(
-      TLEARN_USE_NONE => '無',
+      TLEARN_USE_NONE => t('None'),
       TLEARN_USE_YOUTUBE => '使用 Youtube，會使用 youtube 描述欄位的內容進行播放', 
       TLEARN_USE_SITEFOLDER => '使用網站內目錄播放', 
       TLEARN_USE_CLOUDFRONT => '使用 Cloudfront 播放',
@@ -432,7 +432,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#type' => 'radios',
     '#title' => '會員免費閱讀影片處理', 
     '#options' => array(
-      TLEARN_USE_NONE => '無',
+      TLEARN_USE_NONE => t('None'),
       TLEARN_USE_YOUTUBE => '使用 Youtube', 
       TLEARN_USE_SITEFOLDER => '使用網站內目錄播放', 
       TLEARN_USE_CLOUDFRONT => '使用 Cloudfront 播放',

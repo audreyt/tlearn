@@ -554,7 +554,7 @@ function tlearn_section_vars($section_nid) {
   
 
   if (empty($prev))
-    $str = '無';
+    $str = t('None');
   else {
     $node = node_load($prev['nid']);
     $str = l($node->title, 'node/' . $node->nid);
@@ -564,7 +564,7 @@ function tlearn_section_vars($section_nid) {
   ); 
   
   if (empty($next))
-    $str = '無';
+    $str = t('None');
   else {
     $node = node_load($next['nid']);
     $str = l($node->title, 'node/' . $node->nid);  
@@ -1209,7 +1209,7 @@ function tlearn_class_authorize($uid, $nid) {
     $classno = 'error'; 
 
     watchdog('tlearn', 
-        '採權給 uid = @uid, 課程 nid=@nid 時，該課程沒有有效的課程編號',
+        '授權給 uid = @uid, 課程 nid=@nid 時，該課程沒有有效的課程編號',
         array('@uid' => $uid, '@nid' => $nid), 
         WATCHDOG_ERROR, 
         l(t('edit'),'node/'.$nid));
