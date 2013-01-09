@@ -1,0 +1,191 @@
+  # $Id$
+#
+# Chinese, Traditional translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  tlearn.admin.inc: n/a
+#  tlearn.module: n/a
+#  tlearn.theme.inc: n/a
+#  tlearn.install: n/a
+#  tlearn.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2013-01-09 10:22+0800\n"
+"PO-Revision-Date: 2013-01-09 10:22+0800\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Chinese, Traditional <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+#: tlearn.admin.inc:666 tlearn.module:1207;1236
+msgid "edit"
+msgstr "編輯"
+
+#: tlearn.admin.inc:671
+msgid "delete"
+msgstr "刪除"
+
+#: tlearn.admin.inc:680
+msgid "Save"
+msgstr "儲存"
+
+#: tlearn.admin.inc:724
+msgid "Save configuration"
+msgstr "儲存設定"
+
+#: tlearn.admin.inc:793
+msgid "確定要刪除角色 %name 的閱讀權限設定?"
+msgstr ""
+
+#: tlearn.admin.inc:795
+msgid "This action cannot be undone."
+msgstr "這個動作無法被復原。"
+
+#: tlearn.admin.inc:796
+msgid "Delete"
+msgstr "刪除"
+
+#: tlearn.admin.inc:797
+msgid "Cancel"
+msgstr "取消"
+
+#: tlearn.admin.inc:812
+msgid "角色 %name 的閱讀權限設定已刪除."
+msgstr ""
+
+#: tlearn.theme.inc:51
+msgid "Role"
+msgstr "角色"
+
+#: tlearn.theme.inc:54
+msgid "Weight"
+msgstr "權重"
+
+#: tlearn.theme.inc:65
+msgid "尚未建立角色的閱讀權限。 <a href=\"@link\">新增角色閱讀權限</a>."
+msgstr ""
+
+#: tlearn.module:1326
+msgid "Class name"
+msgstr "課程名稱"
+
+#: tlearn.module:1327
+msgid "Begin date"
+msgstr "起始日期"
+
+#: tlearn.module:1328
+msgid "Expire date"
+msgstr "截止日期"
+
+#: tlearn.module:1329
+msgid "Expired?"
+msgstr "是否到期"
+
+#: tlearn.module:1203;1232
+msgid "tlearn"
+msgstr ""
+
+#: tlearn.module:1203
+msgid "採權給 uid = @uid, 課程 nid=@nid 時，該課程沒有有效的課程編號"
+msgstr ""
+
+#: tlearn.module:1232
+msgid "node @nid 欄位：有效天數欄位設定錯誤或未設. User (uid:@uid) 購買時暫定先給一佪月"
+msgstr ""
+
+#: tlearn.module:69
+msgid "Tlearn 模組設定"
+msgstr ""
+
+#: tlearn.module:70
+msgid "設定課程的各項參數"
+msgstr ""
+
+#: tlearn.module:79
+msgid "課程參數設定"
+msgstr ""
+
+#: tlearn.module:86
+msgid "節次參數設定"
+msgstr ""
+
+#: tlearn.module:89
+msgid "設定課程節次的各項參數"
+msgstr ""
+
+#: tlearn.module:98
+msgid "角色權限控制"
+msgstr ""
+
+#: tlearn.module:101
+msgid "設定各種角色可以閱讀哪些課程類別。"
+msgstr ""
+
+#: tlearn.module:109
+msgid "角色－課程類別對應清單"
+msgstr ""
+
+#: tlearn.module:114
+msgid "刪除角色閱讀權限"
+msgstr ""
+
+#: tlearn.module:126
+msgid "編輯角色閱讀權限"
+msgstr ""
+
+#: tlearn.module:134
+msgid "新增角色"
+msgstr ""
+
+#: tlearn.module:144
+msgid "訊息設定"
+msgstr ""
+
+#: tlearn.module:147
+msgid "設定各種 Tlearn 相關訊息。"
+msgstr ""
+
+#: tlearn.install:35
+msgid "video visit record for users"
+msgstr ""
+
+#: tlearn.install:38
+msgid "primary key"
+msgstr ""
+
+#: tlearn.install:44;108
+msgid "user uid"
+msgstr ""
+
+#: tlearn.install:50
+msgid "section nid"
+msgstr ""
+
+#: tlearn.install:76
+msgid "time visited for this section, this user"
+msgstr ""
+
+#: tlearn.install:82
+msgid "user browser ip"
+msgstr ""
+
+#: tlearn.install:99
+msgid "使用者課程權限檔"
+msgstr ""
+
+#: tlearn.install:102
+msgid "primary key field"
+msgstr ""
+
+#: tlearn.install:114
+msgid "class nid"
+msgstr ""
+
+#: tlearn.install:133
+msgid "End date"
+msgstr "結束日期"
