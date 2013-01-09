@@ -688,31 +688,41 @@ function tlearn_admin_troles($form) {
  * @see tlearn_admin_trole_form_submit()
  */
 function tlearn_admin_trole_form($form, &$form_state, $trole=array()) {
+  if (!is_array($trole)) {
+        $trole = (array) $trole;
+  }
+  
+  $trole += array(
+    'rid' => 0,
+    'name' => '',
+    'terms' => '',
+    'weight' => 0,
+  ); 
+  
+  $form['#trole'] = (object) $trole;
 
-  if (!empty($trole)) {    
-    $form['#trole'] = $trole; 
+  if (empty($trole['rid'])) {
     $form['trole'] = array(
+      '#type' => 'select',
       '#title' => '角色',
-      '#markup' => $trole->name,
-    ); 
+      '#required' => true,
+      '#options' => tlearn_role_options(),
+    );
   }
   else {
-    $form['#trole'] = array();
     $form['trole'] = array(
-      '#type' => 'select', 
-      '#title' => '角色', 
-      '#required' => true, 
-      '#options' => tlearn_role_options(),
+      '#title' => '角色',
+      '#markup' => '<h3>' . $trole['name'] . '</h3>', 
     );
   }
   
   // term 的勾選，包括「全選」，「都不要」
-  $form['terms'] = array(
+  $form['term_checkboxes'] = array(
     '#type' => 'checkboxes',
     '#title' => '可閱讀的課程類別',   
     '#required' => true, 
     '#options' => tlearn_term_options(), 
-    '#default_value' => empty($trole) ? array() : $trole->terms,
+    '#default_value' => empty($trole) ? array() : explode(',', $trole['terms']),
   );  
   
   $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));
@@ -725,7 +735,7 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/config/tlearn/troles'; 
   
   $terms = array(); 
-  $choices = array_values($form_state['values']['terms']); 
+  $choices = array_values($form_state['values']['term_checkboxes']); 
   
   if (in_array(TLEARN_OPTION_ALL, $choices)) {
     $terms = array(TLEARN_OPTION_ALL);
@@ -734,18 +744,18 @@ function tlearn_admin_trole_form_submit($form, &$form_state) {
     $terms = array(TLEARN_OPTION_NONE); 
   }  
   else {
-    foreach($choices as $value) {
-      if ($value) {
-        $terms[] = $value; 
-      }
+    foreach(array_filter($choices) as $value) {
+      $terms[] = $value;
     }
   }
   
-  // edit 項目時，抓出原 rid  
-  if (!empty($form['#trole'])) {
-    $rid = $form['#trole']->rid; 
+  // edit 項目時 (有 rid)，抓出原 rid  
+  $trole = $form['#trole'];
+  if (!empty($trole->rid)) {
+    $rid = $trole->rid; 
   }
   else {
+    // 否則是新增，使用 user 挑選的 
     $rid = $form_state['values']['trole']; 
   }
   

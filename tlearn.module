@@ -792,6 +792,9 @@ function tlearn_movieshow_youtube($permission, $class, $section_node) {
 /**
  *
  * 載入在 tlearn_role 有定義的 Roles 並傳回 
+ * 載入：
+ * tlearn: rid, terms (string)
+ * roles: name, weight 
  */
 function tlearn_troles_load_multiple($rids = array(), $conditions = array(), $reset = FALSE) {
   $troles = &drupal_static(__FUNCTION__, array());
@@ -1069,6 +1072,7 @@ function tlearn_field_options() {
 
 /*
  * 收集指定 vocabulary 下的所有 term, 再加上「全部」，「都不要」
+ * 
  */
 function tlearn_term_options() {
   $options = array();
@@ -1076,14 +1080,15 @@ function tlearn_term_options() {
   $options[TLEARN_OPTION_ALL] = '全部'; 
   $options[TLEARN_OPTION_NONE] = '都不要'; 
   
+  
+  
   $vid = variable_get('tlearn_class_vocabulary', null);
   if (empty($vid) || !($vocabulary = taxonomy_vocabulary_load($vid))) {
     $m = '尚未設定課程指定的 Vocabulary，請先至 <a href="admin/config/tlearn/class">課程參數設定</a> 進行設定';
     drupal_set_message($m, 'error'); 
     return $options; 
   }
- 
-  
+   
   $terms = taxonomy_term_load_multiple(array(), array('vid' => $vid));
   
   foreach($terms as $tid => $term) {
