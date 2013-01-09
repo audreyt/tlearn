@@ -1,5 +1,5 @@
 name = TLearn
-description = On-line movie learning system By Totolearn Technology. 
+description = On-line movie learning system created by Art Tsai
 package = Tlearn
 core = 7.x
 php = 5.3
