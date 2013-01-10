@@ -784,7 +784,7 @@ function tlearn_admin_trole_delete($form, &$form_state, $trole) {
 
   return confirm_form($form, 
       t('確定要刪除角色 %name 的閱讀權限設定?', array('%name' => $trole->name)), 
-      'admin/tlearn/troles',
+      'admin/config/tlearn/troles',
       t('This action cannot be undone.'), 
       t('Delete'), 
       t('Cancel')
