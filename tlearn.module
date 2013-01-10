@@ -400,12 +400,12 @@ function tlearn_fetch_class($class_nid, $reset=false) {
 function tlearn_set_class($class_nid) {
   
   if (!($section_type = variable_get('tlearn_section_type'))) {
-    drupal_set_message('尚未設定 tlearn 模組，未定義課程節之內容類型。', 'error');
+    drupal_set_message('尚未設定 tlearn 模組，未定義節次之內容類型。', 'error');
     exit;
   }
   
   if (!($field_classref_key = variable_get('tlearn_section_classref'))) {
-    drupal_set_message('尚未設定 tlearn 模組，未定義課程連結。', 'error');
+    drupal_set_message('尚未設定 tlearn 模組，未定義節次之課程連結欄位。', 'error');
     exit;    
   }
   
@@ -1209,7 +1209,7 @@ function tlearn_class_authorize($uid, $nid) {
     $classno = 'error'; 
 
     watchdog('tlearn', 
-        '授權給 uid = @uid, 課程 nid=@nid 時，該課程沒有有效的課程編號',
+        '授權給 uid=@uid, 課程 nid=@nid 時，該課程沒有有效的課程編號',
         array('@uid' => $uid, '@nid' => $nid), 
         WATCHDOG_ERROR, 
         l(t('edit'),'node/'.$nid));
@@ -1238,7 +1238,7 @@ function tlearn_class_authorize($uid, $nid) {
     $value = '1 month';
 
     watchdog('tlearn', 
-        'node @nid 欄位：有效天數欄位設定錯誤或未設. User (uid:@uid) 購買時暫定先給一佪月', 
+        'node @nid 欄位：有效天數欄位設定錯誤或未設. User (uid:@uid) 購買時暫定先給一個月', 
         array('@nid' => $nid, '@uid' => $uid), 
         WATCHDOG_ERROR, 
         l(t('edit'),'node/'. $nid));
