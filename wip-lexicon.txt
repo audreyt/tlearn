@@ -1,0 +1,369 @@
+Tlearn 模組設定
+Tlearn module settings
+
+node @nid 欄位：有效天數欄位設定錯誤或未設. User (uid:@uid) 購買時暫定先給一個月
+node @nid field: Effective Days field setting is empty or invalid. Purchase from user (uid: @uid) tentatively set to expire in one month.
+
+角色 %name 的閱讀權限設定已刪除.
+Read permission set of role %name has been deleted.
+
+授權給 uid=@uid, 課程 nid=@nid 時，該課程沒有有效的課程編號
+No valid course ID when authorizing uid=@uid, course nid=@nid
+
+設定各種 Tlearn 相關訊息。
+Set various Tlearn messages.
+
+新增角色
+New role
+
+訊息設定
+Message settings
+
+節次參數設定
+Section settings
+
+角色權限控制
+Role permissions
+
+課程參數設定
+Course settings
+
+確定要刪除角色 %name 的閱讀權限設定?
+Are you sure you want to delete access permissions for role %name?
+
+使用者課程權限檔
+User course permissions file
+
+刪除角色閱讀權限
+Delete Role Permission
+
+編輯角色閱讀權限
+Edit Role Permission
+
+設定課程的各項參數
+Setting the parameters of the course
+
+角色－課程類別對應清單
+List of Role-Course mappings
+
+設定課程節次的各項參數
+Set course section parameters
+
+尚未建立角色的閱讀權限。 <a href="@link">新增角色閱讀權限</a>.
+Role Permissions have not yet been configured. <a href=\"@link\">Create a new Role Permission.</a>
+
+設定各種角色可以閱讀哪些課程類別。
+Assign Course permissions to specific Roles.
+
+管理課程設定
+Manage Courses
+
+管理節次設定
+Manage Sections
+
+管理角色閱讀權限
+Manage Role Permission
+
+尚未設定 tlearn 模組，未定義節次之內容類型。
+Missing tlearn modules configuration: Content type undefined for Sections.
+
+尚未設定 tlearn 模組，未定義節次之課程連結欄位。
+Missing tlearn modules configuration: Course link field undefined for Sections.
+
+請先設定 tlearn 模組，尚未設定章次欄位或節次欄位
+Please set tlearn module, field or section of Chapter sub-field has not been set
+
+您沒有權閱讀此影片
+You are not yet authorized to access this video
+
+全部
+All Courses
+
+都不要
+No Courses
+
+尚未設定課程指定的 Vocabulary，請先至 <a href="admin/config/tlearn/class">課程參數設定</a> 進行設定
+Course Vocabulary not yet specified, please visit the <a href="admin/config/tlearn/course">Course settings</a> page
+
+已到期
+Expired
+
+<h3>使用者擁有的課程權限清單</h3> #TODO#
+<h3>user courses permissions list </h3>
+
+在使用 Tlearn 模組之前，您必需先啟動 Drupal 的 !link
+Before in use Tlearn module, you must first start Drupal !link
+
+私人目錄
+Private directory
+
+請先閱讀本頁各項設定細節，在準備完成後，再進行設定。
+Please read this page each setting details ready to complete the set.
+
+課程基本設定
+Basic setting of the course
+
+Tlearn 課程基本設定，一律必填。
+The basic settings Tlearn courses shall be required.
+
+課程內容類型
+Course content types
+
+請選擇課程所使用的內容類型機器名稱, 可指定多個, 利用半形逗點隔開。
+Please select the course content type machine name, you can specify multiple commas separated.
+
+課程類別使用的 Vocabulary
+Type of course use the Vocabulary
+
+請選擇課程類別的 Vocabulary (請先建立此 Vocabulary)。
+Please select the type of course the Vocabulary (please create this Vocabulary).
+
+課程類別 term 欄位
+Course category term field
+
+請填寫課程內容類型中，term 欄位
+Please fill out the type of course content, the term field
+
+課程編號欄位
+Course ID field
+
+請填寫課程內容類型中，課程編號欄位
+Please fill in the type of course content, course ID field
+
+如果您要銷售單一課程，需指定購買後課程有效天數。可輸入例如 1 days, 10 days, 1 months, 3 months, 1 years 等等。此欄位可以作成 list(text) 類型的欄位，方便您的輸入。
+If you want to sell a single course, you need to specify the effective number of days after purchase programs. Can enter for example, 1 days, 10 days, 2 months, 3 months, 1 years and so on. This field can be made to the list (text) field, to facilitate your input.
+
+購買時，課程有效天數欄位
+The time of purchase, the Course effective field days
+
+如果課程附帶有下載檔案，並且要依據課程權限提供下載，請填寫課程的下載欄位。<span style="color:red;">注意：檔案存放目錄必需是在 private://tlearn/ 底下。</span>
+If the course comes with download files, download and permissions according to the Course, please fill out the courses download field. The <span style="color:red;"> Note: File storage directory must be under the private://tlearn/ directory.</span>
+
+課程下載檔案欄位
+The course download files field
+
+如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。路徑必需是在 private://tlearn 底下。
+If you are ready to take advantage of Drupal sites within a directory to hold the course movie as one of the playback path, please fill in this area. The path must be in the private://tlearn underneath.
+
+課程影片 Site 路徑設定
+The course Videos Site path setting
+
+drupal site 內課程影片目錄
+Drupal site within the Course movie catalog
+
+請填寫影片放在 site 中的路徑，例如路徑是 private://tlearn/class/videos 時，請填寫 class/videos，前後不要再加斜線。
+Please fill out the videos on the site in the path, for example, if the path is private://tlearn/course/videos, please fill out "course/videos", and do not add a slash before or after.
+
+如果您準備利用 Amazon AWS 的 Cloudfront 作為影片播放方法之一，請填寫本區資料。
+If you are ready to take advantage of Amazon AWS Cloudfront as one of the methods of video playback, please fill in this area.
+
+課程影片 Amazon Cloudfront 設定
+The Amazon Cloudfront course movie setting
+
+請填寫您的 cloudfront 的 domain name (不含 http 字頭，不含最後的斜線)
+Please fill in your cloudfront domain name (without http prefix, excluding the final slash)
+
+請填寫您的 key file 放置的完整路徑（含檔名）。此路徑請置於 Apache 無法存取的地方。
+Please fill in your key file is placed in the full path (including file name). This path is placed Apache can not access.
+
+請填寫您的 Cloudfront Key Pair id
+Please fill in your Cloudfront Key Pair id
+
+AWS Cloudfront 前置目錄
+AWS Cloudfront pre Catalog
+
+請填寫在 Cloudfront 中影片檔的前置目錄。例如，如果影片檔名的位置是在 "dir1/dir2/13001/00-01.mp4"，其中的 "13001" 是課程編號。那麼請填寫 "dir1/dir2"，後面不要加上斜線。
+Please fill out the pre-video files in Cloudfront directory. For example, if the location of the video file name is "dir1/dir2/13001/00-01.mp4", "13001" is the course ID. "dir1/dir2", then please fill behind Do not slash.
+
+課程影片置放在 Youtube 時的設定。 本區無需進行任何設定。
+Course set video placed on Youtube. The area without any setting.
+
+課程影片 Youtube 設定
+Course Videos Youtube set
+
+課程內容類型設定錯誤，請確認每一個輸入的內容類型機器名稱
+Course content type setting error, make sure the machine name of the content type for each input
+
+"%type" 不是內容類型
+"%type" is not a content type
+
+內容類型: @type 中無此 term 欄位: @field
+No such term field content type: @type: @field
+
+內容類型: @type 中無此課程編號欄位: @field
+Content type: @type, no such course ID field: @field
+
+內容類型: @type 中無此有效天數欄位: @field
+Content type: @type no such effective number of days in the field: @field
+
+在定義課程下載欄位之前，您必需先啟動 Drupal 的 !link
+Before a defined Course download field, you must first start Drupal !link
+
+私人目錄
+Private directory
+
+網站內部目錄: !path 不正確 (沒有此目錄, 或 drupal 無讀寫權限)
+Within the site directory: path is not correct (not in this directory or Drupal read and write permissions)
+
+節次基本設定
+Section times the basic set
+
+Tlearn 節次基本設定。
+Tlearn section times the basic settings.
+
+節次內容類型
+Section times the content type
+
+請選擇節次所使用的內容類型
+Please select the type of content section times
+
+連結課程的連結欄位
+Links courses link field
+
+請選擇連結課程的連結欄位
+Please select the link of the links courses field
+
+試讀欄位
+Preview field
+
+請選擇定義試讀的欄位。僅可填 1 (免費閱讀), 2 (會員免費閱讀) 或空白。不填的話代表沒有免費閱讀。
+Please choose to define the probation field. Can be filled only 1 (free to read), 2 (membership is free to read) or blank. The blank words represented no free reading.
+
+章次編號欄位
+Chapter Number field
+
+請選擇章次編號欄位
+Please select Chapter Number field
+
+節次編號欄位
+Session No. field
+
+請選擇節次編號欄位
+Please select the Session ID field
+
+節次名稱直接以節次內容類型的標題，作為該節次的名稱。
+The name of the section times directly to the title of the section times the content type, as the name of the festival times.
+
+影片欄位設定
+Video field
+
+請選擇影片檔名的欄位。
+Please select the video file name field.
+
+Youtube 嵌入描述欄位
+The Youtube embed describe field
+
+請選擇 Youtube 嵌入描述的欄位
+Please select the the Youtube embedded description fields
+
+免費閱讀的影片檔名欄位
+Free to read the video file name field
+
+請選擇免費閱讀的影片檔名欄位。無填寫代表沒有提供免費閱讀。
+Please select a free reading of the movie file name field. The no fill representatives did not provide the free reading.
+
+會員免費閱讀的影片檔名欄位
+Member is free to read the video file name field
+
+請選擇會員免費閱讀的影片檔名欄位。無填寫代表沒有會員免費閱讀。
+Please select a member for free to read the video file name field. Fill representatives no membership free reading.
+
+有權限者的影片檔名欄位
+Have permission movie file name field
+
+請選擇有權限者的影片檔名欄位
+Have permission to select the video file name field
+
+影片控制設定
+Video control settings
+
+Tlearn 影片控制設定。
+Videos Tlearn control settings.
+
+免費閱讀影片處理
+Free reading film processing
+
+使用 Youtube，會使用 youtube 描述欄位的內容進行播放
+Youtube, youtube description of the contents of the field to play
+
+使用網站內目錄播放
+Use the site directory player
+
+使用 Cloudfront 播放
+Cloudfront player
+
+會員免費閱讀影片處理
+Member free to read the film processing
+
+使用 Youtube
+Use Youtube
+
+有權限者閱讀影片處理
+Have permission to read the film processing
+
+尚未設定課程，請先設定課程相關設定。
+Has not yet set a course, please set a course related settings.
+
+"%type" 不是內容類型
+"% Type" is not a content type
+
+內容類型: @type 中無此課程節點連結欄位: @field
+Content type: @type no such courses nodes in the link field: @field
+
+內容類型: @type 中無此展示記號欄位: @field
+Content type: @type no such show mark fields: @field
+
+內容類型: @type 中無此章次編號欄位: @field
+Content type: @type, in the no such chapter number field: @field
+
+內容類型: @type 中無此節次編號欄位: @field
+Content type: @type no such section number field: @field
+
+內容類型: @type 中無此免費閱讀影片欄位: @field
+Content type: @type no such free reading movie field: @field
+
+內容類型: @type 中無此會員免費閱讀影片欄位: @field
+No such Member of the content type: @type in free to read the movie field: @field
+
+內容類型: @type 中無此有權限者影片欄位: @field
+Content type: @type None have permission to film field: @field
+
+內容類型: @type 中無此 youtube 嵌入欄位: @field
+Content type: @type None youtube embedded field: @field
+
+您還沒有設定課程影片的網站內部目錄，請先至課程參數設定處理。
+You can also set the course the movie within the site directory, please refer to the Course setting process.
+
+無法使用 Cloudfront 進行播放。Cloudfront Key File @keyfile 不存在。請先至課程設定進行更正。
+Unable to use Cloudfront to play. The Cloudfront Key File @keyfile does not exist. Please go to the course set correct.
+
+無法使用 Cloudfront 進行播放。Cloudfront Key Pair Id 未填寫。請先至課程設定進行更正。
+Unable to use Cloudfront to play. The Cloudfront Key Pair Id is not fill. Please go to the course set correct.
+
+角色
+Role
+
+可閱讀的課程類別
+Grant access to these course categories
+
+新增 / 修改角色閱讀權限成功！
+Add / Modify the role successfully read permissions!
+
+確定要刪除角色 %name 的閱讀權限設定?
+You sure you want to delete role setting Permission for %name?
+
+角色 %name 的閱讀權限設定已刪除.
+Read permission set of roles %name has been deleted.
+
+相關訊息設定
+Relevant message settings
+
+Tlearn 相關訊息設定。
+Tlearn message settings.
+
+課程清單中沒有項目時的訊息
+Message to display when the course list is empty
+
+您目前沒有單一課程的權限
+You currently do not have any single-course permissions
+
