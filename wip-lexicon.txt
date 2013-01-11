@@ -88,40 +88,40 @@ Course Vocabulary not yet specified, please visit the <a href="admin/config/tlea
 已到期
 Expired
 
-<h3>使用者擁有的課程權限清單</h3> #TODO#
-<h3>user courses permissions list </h3>
+<h3>使用者擁有的課程權限清單</h3>
+<h3>Course Permissions for User</h3>
 
 在使用 Tlearn 模組之前，您必需先啟動 Drupal 的 !link
-Before in use Tlearn module, you must first start Drupal !link
+Before using Tlearn module, please enable Drupal's !link function first.
 
 私人目錄
 Private directory
 
 請先閱讀本頁各項設定細節，在準備完成後，再進行設定。
-Please read this page each setting details ready to complete the set.
+Please carefully review each field's description in this page before configuring this module.
 
 課程基本設定
-Basic setting of the course
+Course: Basic settings
 
 Tlearn 課程基本設定，一律必填。
-The basic settings Tlearn courses shall be required.
+Basic settings for Tlearn courses; all fields are required.
 
 課程內容類型
-Course content types
+Course Content Types
 
 請選擇課程所使用的內容類型機器名稱, 可指定多個, 利用半形逗點隔開。
-Please select the course content type machine name, you can specify multiple commas separated.
+Please enter the machine names of one or more Course content types, separated by commas.
 
 課程類別使用的 Vocabulary
-Type of course use the Vocabulary
+Course Vocabulary
 
 請選擇課程類別的 Vocabulary (請先建立此 Vocabulary)。
-Please select the type of course the Vocabulary (please create this Vocabulary).
+Please select the Vocabulary of Course nodes (you may need to create a vocabulary first).
 
 課程類別 term 欄位
-Course category term field
+Course Term field
 
-請填寫課程內容類型中，term 欄位
+請填寫課程內容類型中，term 欄位#TODO#
 Please fill out the type of course content, the term field
 
 課程編號欄位
