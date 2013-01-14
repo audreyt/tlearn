@@ -94,7 +94,7 @@ function tlearn_admin_tlearn($form, &$form_state) {
     '#default_value' => variable_get('tlearn_class_downloadfield', null),    
   );
   
-  $description = '如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。路徑必需是在 private://tlearn 底下。';
+  $description = '如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。路徑必需是在 private://tlearn/ 底下。';
   $form['tlearn_site_folder'] = array(
     '#type' => 'fieldset',
     '#title' => '課程影片 Site 路徑設定',
@@ -105,7 +105,7 @@ function tlearn_admin_tlearn($form, &$form_state) {
   // @todo 路徑的處理，參考 ubercart credit card 的方法 
   $form['tlearn_site_folder']['tlearn_site_path'] = array(
     '#type' => 'textfield',
-    '#title' => 'drupal site 內課程影片目錄', 
+    '#title' => 'Drupal 站內課程影片目錄',
     '#description' => '請填寫影片放在 site 中的路徑，例如路徑是 private://tlearn/class/videos 時，請填寫 class/videos，前後不要再加斜線。', 
     '#default_value' => variable_get('tlearn_site_path', null),        
     );
@@ -146,10 +146,10 @@ function tlearn_admin_tlearn($form, &$form_state) {
   );
   
   
-  $description = '課程影片置放在 Youtube 時的設定。 本區無需進行任何設定。';
+  $description = '課程影片置放在 YouTube 時的設定。 本區無需進行任何設定。';
   $form['tlearn_setting_youtube'] = array(
     '#type' => 'fieldset',
-    '#title' => '課程影片 Youtube 設定',
+    '#title' => '課程影片 YouTube 設定',
     '#collapsible' => FALSE,
     '#description' => $description, 
   );  
@@ -278,7 +278,7 @@ function tlearn_admin_tlearn_validate($form, &$form_state) {
     
     if (!file_prepare_directory($folder_uri)) {
       form_set_error('tlearn_site_path', 
-          format_string('網站內部目錄: !path 不正確 (沒有此目錄, 或 drupal 無讀寫權限)',
+          format_string('網站內部目錄: !path 不正確 (沒有此目錄, 或 Drupal 無讀寫權限)',
               array('!path' => $folder_path))); 
       $error = true; 
     }
@@ -372,10 +372,10 @@ function tlearn_admin_section($form, &$form_state) {
   
   $form['tlearn_moviefield_options']['tlearn_youtube_field'] = array(
     '#type' => 'select',
-    '#title' => 'Youtube 嵌入描述欄位', 
+    '#title' => 'YouTube 嵌入描述欄位',
     '#empty_value' => 0, 
     '#options' => tlearn_field_options(),    
-    '#description' => '請選擇 Youtube 嵌入描述的欄位', 
+    '#description' => '請選擇 YouTube 嵌入描述的欄位',
     '#default_value' => variable_get('tlearn_youtube_field', null),    
   );
 
@@ -421,7 +421,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#title' => '免費閱讀影片處理', 
     '#options' => array(
       TLEARN_USE_NONE => t('None'),
-      TLEARN_USE_YOUTUBE => '使用 Youtube，會使用 youtube 描述欄位的內容進行播放', 
+      TLEARN_USE_YOUTUBE => '使用 YouTube，會使用 YouTube 描述欄位的內容進行播放',
       TLEARN_USE_SITEFOLDER => '使用網站內目錄播放', 
       TLEARN_USE_CLOUDFRONT => '使用 Cloudfront 播放',
     ), 
@@ -433,7 +433,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#title' => '會員免費閱讀影片處理', 
     '#options' => array(
       TLEARN_USE_NONE => t('None'),
-      TLEARN_USE_YOUTUBE => '使用 Youtube', 
+      TLEARN_USE_YOUTUBE => '使用 YouTube',
       TLEARN_USE_SITEFOLDER => '使用網站內目錄播放', 
       TLEARN_USE_CLOUDFRONT => '使用 Cloudfront 播放',
     ), 
@@ -445,7 +445,7 @@ function tlearn_admin_section($form, &$form_state) {
     '#title' => '有權限者閱讀影片處理', 
     '#options' => array(
       TLEARN_USE_NONE => '無',
-      TLEARN_USE_YOUTUBE => '使用 Youtube', 
+      TLEARN_USE_YOUTUBE => '使用 Youtube',
       TLEARN_USE_SITEFOLDER => '使用網站內目錄播放', 
       TLEARN_USE_CLOUDFRONT => '使用 Cloudfront 播放',
     ), 
@@ -536,7 +536,7 @@ function tlearn_admin_section_validate($form, &$form_state) {
     $error = true; 
   }
   
-  // youtube 欄位有用到時，再檢查 
+  // YouTube 欄位有用到時，再檢查
     
   /* 
    * 免費閱讀的影片檔名欄位: tlearn_free_moviefield
@@ -599,7 +599,7 @@ function tlearn_admin_section_validate($form, &$form_state) {
     
     if (!in_array($youtube_field, $section_fields)) {
       form_set_error('tlearn_youtube_field', 
-        format_string('內容類型: @type 中無此 youtube 嵌入欄位: @field', 
+        format_string('內容類型: @type 中無此 YouTube 嵌入欄位: @field',
             array('@type' => $section_type, '@field'=>$youtube_field)));
 
       $error = true; 

@@ -2,7 +2,7 @@ Tlearn 模組設定
 Tlearn module settings
 
 node @nid 欄位：有效天數欄位設定錯誤或未設. User (uid:@uid) 購買時暫定先給一個月
-node @nid field: Effective Days field setting is empty or invalid. Purchase from user (uid: @uid) tentatively set to expire in one month.
+node @nid field: Effective Days field setting is empty or invalid. Registration from user (uid: @uid) tentatively set to expire in one month.
 
 角色 %name 的閱讀權限設定已刪除.
 Read permission set of role %name has been deleted.
@@ -131,36 +131,36 @@ Course ID field
 Please fill in the ID field in Course content types
 
 如果您要銷售單一課程，需指定購買後課程有效天數。可輸入例如 1 day、10 days、1 month、3 months、1 year 等等。此欄位可以作成 list(text) 類型的欄位，方便您的輸入。
-If you'd like users to purchase each course separately, please specify an expiry period for each of them. Some valid values are: 1 day, 10 days, 1 month, 3 months, 1 year. You can make this a list(text) selection field to make input easier.
+If you'd like users to register each course separately, please specify an expiry period for each of them. Some valid values are: 1 day, 10 days, 1 month, 3 months, 1 year. You can make this a list(text) selection field to make input easier.
 
 購買時，課程有效天數欄位
 Expiry Period field
 
 如果課程附帶有下載檔案，並且要依據課程權限提供下載，請填寫課程的下載欄位。<span style="color:red;">注意：檔案存放目錄必需是在 private://tlearn/ 底下。</span>
-If the course comes with download files, download and permissions according to the Course, please fill out the courses download field. The <span style="color:red;"> Note: File storage directory must be under the private://tlearn/ directory.</span>#TODO#
+If a course comes with downloadable files available only to registered users, please specify a Downloads field. <span style="color:red;">Note: The storage path for such files must be under the private://tlearn/ directory.</span>
 
 課程下載檔案欄位
-The course download files field
+Course Downloads field
 
-如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。路徑必需是在 private://tlearn 底下。
-If you are ready to take advantage of Drupal sites within a directory to hold the course movie as one of the playback path, please fill in this area. The path must be in the private://tlearn underneath.
+如果您準備利用 Drupal 網站內的某個目錄存放課程影片作為播放路徑之一，請填寫本區資料。路徑必需是在 private://tlearn/ 底下。
+If you wish to use a directory within this Drupal site to host videos, please fill in this field. The path must be under the private://tlearn/ directory.
 
 課程影片 Site 路徑設定
-The course Videos Site path setting
+Course Video Site Settings
 
-drupal site 內課程影片目錄
-Drupal site within the Course movie catalog
+Drupal 站內課程影片目錄
+Course Video Site Sub-directory
 
 請填寫影片放在 site 中的路徑，例如路徑是 private://tlearn/class/videos 時，請填寫 class/videos，前後不要再加斜線。
-Please fill out the videos on the site in the path, for example, if the path is private://tlearn/course/videos, please fill out "course/videos", and do not add a slash before or after.
+Please specify the video path within this site. For example, if the path is private://tlearn/course/videos, please enter "course/videos", without surrounding slashes or quotes.
 
 如果您準備利用 Amazon AWS 的 Cloudfront 作為影片播放方法之一，請填寫本區資料。
-If you are ready to take advantage of Amazon AWS Cloudfront as one of the methods of video playback, please fill in this area.
+If you wish to use Amazon AWS Cloudfront to host videos, please fill in these fields.
 
 課程影片 Amazon Cloudfront 設定
-The Amazon Cloudfront course movie setting
+Course Video Amazon Cloudfront Settings
 
-請填寫您的 cloudfront 的 domain name (不含 http 字頭，不含最後的斜線)
+請填寫您的 cloudfront 的 domain name (不含 http 字頭，不含最後的斜線)#TODO#
 Please fill in your cloudfront domain name (without http prefix, excluding the final slash)
 
 請填寫您的 key file 放置的完整路徑（含檔名）。此路徑請置於 Apache 無法存取的地方。
@@ -175,11 +175,11 @@ AWS Cloudfront pre Catalog
 請填寫在 Cloudfront 中影片檔的前置目錄。例如，如果影片檔名的位置是在 "dir1/dir2/13001/00-01.mp4"，其中的 "13001" 是課程編號。那麼請填寫 "dir1/dir2"，後面不要加上斜線。
 Please fill out the pre-video files in Cloudfront directory. For example, if the location of the video file name is "dir1/dir2/13001/00-01.mp4", "13001" is the course ID. "dir1/dir2", then please fill behind Do not slash.
 
-課程影片置放在 Youtube 時的設定。 本區無需進行任何設定。
-Course set video placed on Youtube. The area without any setting.
+課程影片置放在 YouTube 時的設定。 本區無需進行任何設定。
+Course set video placed on YouTube. The area without any setting.
 
-課程影片 Youtube 設定
-Course Videos Youtube set
+課程影片 YouTube 設定
+Course Videos YouTube set
 
 課程內容類型設定錯誤，請確認每一個輸入的內容類型機器名稱
 Course content type setting error, make sure the machine name of the content type for each input
@@ -202,7 +202,7 @@ Before a defined Course download field, you must first start Drupal !link
 私人目錄
 Private directory
 
-網站內部目錄: !path 不正確 (沒有此目錄, 或 drupal 無讀寫權限)
+網站內部目錄: !path 不正確 (沒有此目錄, 或 Drupal 無讀寫權限)
 Within the site directory: path is not correct (not in this directory or Drupal read and write permissions)
 
 節次基本設定
@@ -250,11 +250,11 @@ Video field
 請選擇影片檔名的欄位。
 Please select the video file name field.
 
-Youtube 嵌入描述欄位
-The Youtube embed describe field
+YouTube 嵌入描述欄位
+The YouTube embed describe field
 
-請選擇 Youtube 嵌入描述的欄位
-Please select the the Youtube embedded description fields
+請選擇 YouTube 嵌入描述的欄位
+Please select the the YouTube embedded description fields
 
 免費閱讀的影片檔名欄位
 Free to read the video file name field
@@ -283,8 +283,8 @@ Videos Tlearn control settings.
 免費閱讀影片處理
 Free reading film processing
 
-使用 Youtube，會使用 youtube 描述欄位的內容進行播放
-Youtube, youtube description of the contents of the field to play
+使用 YouTube，會使用 YouTube 描述欄位的內容進行播放
+YouTube, YouTube description of the contents of the field to play
 
 使用網站內目錄播放
 Use the site directory player
@@ -295,8 +295,8 @@ Cloudfront player
 會員免費閱讀影片處理
 Member free to read the film processing
 
-使用 Youtube
-Use Youtube
+使用 YouTube
+Use YouTube
 
 有權限者閱讀影片處理
 Have permission to read the film processing
@@ -328,8 +328,8 @@ No such Member of the content type: @type in free to read the movie field: @fiel
 內容類型: @type 中無此有權限者影片欄位: @field
 Content type: @type None have permission to film field: @field
 
-內容類型: @type 中無此 youtube 嵌入欄位: @field
-Content type: @type None youtube embedded field: @field
+內容類型: @type 中無此 YouTube 嵌入欄位: @field
+Content type: @type None YouTube embedded field: @field
 
 您還沒有設定課程影片的網站內部目錄，請先至課程參數設定處理。
 You can also set the course the movie within the site directory, please refer to the Course setting process.
@@ -365,5 +365,5 @@ Tlearn message settings.
 Message to display when the course list is empty
 
 您目前沒有單一課程的權限
-You currently do not have any single-course permissions
+You have not registered to any course yet
 
