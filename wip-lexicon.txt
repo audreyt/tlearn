@@ -121,23 +121,23 @@ Please select the Vocabulary of Course nodes (you may need to create a vocabular
 課程類別 term 欄位
 Course Term field
 
-請填寫課程內容類型中，term 欄位#TODO#
-Please fill out the type of course content, the term field
+請填寫課程內容類型中，term 欄位
+Please fill out the term field in Course content types
 
 課程編號欄位
 Course ID field
 
 請填寫課程內容類型中，課程編號欄位
-Please fill in the type of course content, course ID field
+Please fill in the ID field in Course content types
 
-如果您要銷售單一課程，需指定購買後課程有效天數。可輸入例如 1 days, 10 days, 1 months, 3 months, 1 years 等等。此欄位可以作成 list(text) 類型的欄位，方便您的輸入。
-If you want to sell a single course, you need to specify the effective number of days after purchase programs. Can enter for example, 1 days, 10 days, 2 months, 3 months, 1 years and so on. This field can be made to the list (text) field, to facilitate your input.
+如果您要銷售單一課程，需指定購買後課程有效天數。可輸入例如 1 day、10 days、1 month、3 months、1 year 等等。此欄位可以作成 list(text) 類型的欄位，方便您的輸入。
+If you'd like users to purchase each course separately, please specify an expiry period for each of them. Some valid values are: 1 day, 10 days, 1 month, 3 months, 1 year. You can make this a list(text) selection field to make input easier.
 
 購買時，課程有效天數欄位
-The time of purchase, the Course effective field days
+Expiry Period field
 
 如果課程附帶有下載檔案，並且要依據課程權限提供下載，請填寫課程的下載欄位。<span style="color:red;">注意：檔案存放目錄必需是在 private://tlearn/ 底下。</span>
-If the course comes with download files, download and permissions according to the Course, please fill out the courses download field. The <span style="color:red;"> Note: File storage directory must be under the private://tlearn/ directory.</span>
+If the course comes with download files, download and permissions according to the Course, please fill out the courses download field. The <span style="color:red;"> Note: File storage directory must be under the private://tlearn/ directory.</span>#TODO#
 
 課程下載檔案欄位
 The course download files field

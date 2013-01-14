@@ -73,7 +73,7 @@ function tlearn_admin_tlearn($form, &$form_state) {
   );
 
   $description = 
-  '如果您要銷售單一課程，需指定購買後課程有效天數。可輸入例如 1 days, 10 days, 1 months, 3 months, 1 years 等等。此欄位可以作成 list(text) 類型的欄位，方便您的輸入。'; 
+  '如果您要銷售單一課程，需指定購買後課程有效天數。可輸入例如 1 day、10 days、1 month、3 months、1 year 等等。此欄位可以作成 list(text) 類型的欄位，方便您的輸入。'; 
   $form['tlearn_default_options']['tlearn_class_durationfield'] = array(
     '#type' => 'select',
     '#title' => '購買時，課程有效天數欄位', 
