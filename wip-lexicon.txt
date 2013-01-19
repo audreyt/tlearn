@@ -92,7 +92,7 @@ Expired
 <h3>Course Permissions for User</h3>
 
 在使用 Tlearn 模組之前，您必需先啟動 Drupal 的 !link
-Before using Tlearn module, please enable Drupal's !link function first.
+Before using the Tlearn module, please enable Drupal's !link function first.
 
 私人目錄
 Private directory
@@ -158,54 +158,54 @@ Please specify the video path within this site. For example, if the path is priv
 If you wish to use Amazon AWS Cloudfront to host videos, please fill in these fields.
 
 課程影片 Amazon Cloudfront 設定
-Course Video Amazon Cloudfront Settings
+Course Video - Amazon Cloudfront Settings
 
-請填寫您的 cloudfront 的 domain name (不含 http 字頭，不含最後的斜線)#TODO#
-Please fill in your cloudfront domain name (without http prefix, excluding the final slash)
+請填寫您的 cloudfront 的 domain name (不含 http 字頭，不含最後的斜線)
+Please fill in your CloudFront domain name (without http prefix, excluding the final slash)
 
 請填寫您的 key file 放置的完整路徑（含檔名）。此路徑請置於 Apache 無法存取的地方。
-Please fill in your key file is placed in the full path (including file name). This path is placed Apache can not access.
+Please fill in the full pathname to your key file (including file name). This path should be placed outside the web site's document root.
 
 請填寫您的 Cloudfront Key Pair id
-Please fill in your Cloudfront Key Pair id
+Please fill in your CloudFront Key Pair ID
 
 AWS Cloudfront 前置目錄
-AWS Cloudfront pre Catalog
+AWS CloudFront directory prefix
 
 請填寫在 Cloudfront 中影片檔的前置目錄。例如，如果影片檔名的位置是在 "dir1/dir2/13001/00-01.mp4"，其中的 "13001" 是課程編號。那麼請填寫 "dir1/dir2"，後面不要加上斜線。
-Please fill out the pre-video files in Cloudfront directory. For example, if the location of the video file name is "dir1/dir2/13001/00-01.mp4", "13001" is the course ID. "dir1/dir2", then please fill behind Do not slash.
+Please fill out prefix for video files in CloudFront. For example, if the video file name for course ID 13001 is "dir1/dir2/13001/00-01.mp4", then please fill in "dir1/dir2" here without the trailing slash.
 
 課程影片置放在 YouTube 時的設定。 本區無需進行任何設定。
-Course set video placed on YouTube. The area without any setting.
+Settings for Course Videos hosted on YouTube. The section does not require any settings.
 
 課程影片 YouTube 設定
-Course Videos YouTube set
+Course Video - YouTube Settings
 
 課程內容類型設定錯誤，請確認每一個輸入的內容類型機器名稱
-Course content type setting error, make sure the machine name of the content type for each input
+Course Content Type setting error, please double-check the machine name for each specified content type
 
 "%type" 不是內容類型
 "%type" is not a content type
 
 內容類型: @type 中無此 term 欄位: @field
-No such term field content type: @type: @field
+Content Type: No such term field in @type: @field
 
 內容類型: @type 中無此課程編號欄位: @field
-Content type: @type, no such course ID field: @field
+Content Type: No such course ID field in @type: @field
 
 內容類型: @type 中無此有效天數欄位: @field
-Content type: @type no such effective number of days in the field: @field
+Content Type: No such expiry period field in @type: @field
 
 在定義課程下載欄位之前，您必需先啟動 Drupal 的 !link
-Before a defined Course download field, you must first start Drupal !link
+Before defining a Course Downloads field, please enable Drupal's !link function first.
 
 私人目錄
-Private directory
+Private Directory
 
 網站內部目錄: !path 不正確 (沒有此目錄, 或 Drupal 無讀寫權限)
-Within the site directory: path is not correct (not in this directory or Drupal read and write permissions)
+Incorrect site directory: !path (directory does not exist, or Drupal has no read/write permissions to it)
 
-節次基本設定
+節次基本設定#TODO#
 Section times the basic set
 
 Tlearn 節次基本設定。
