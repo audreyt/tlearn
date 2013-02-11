@@ -1,0 +1,34 @@
+1. Extract TLearn, References (7.x-2.1) and FlowPlayer (dev) into site/modules/all/.
+2. Enable all TLearn, Node References and FlowPlayer in Modules.
+3. Add Taxonomy "課程類別"/"課程類別" with machine name "course_type".
+4. Add Term "公開講座" to that taxonomy.
+5. Add Content Type "Course"; click "Save and Add Fields"
+6. Add a field "Course Type" to the content type as "Autocomplete Term".
+8. Choose "課程類別" as the vocabulary, Save.
+9. Check "Required field"; Change Number of Values to "Unlimited", then Save again.
+10. Add a field "Course Number" to the content type as a "Text" "Text field".
+11. Save. Check "Required field", then Save again.
+12. Add a field "Course Expiry" to the content type as a "List(text)" "Select list".
+13. Save. Add these values:
+    7 days|一星期
+    1 month|一個月
+    3 months|三個月
+    6 months|半年
+    1 year|一年
+14. Save. Check "Required field", then Save again.
+15. Add Content Type "Section"; click "Save and Add Fields"
+16. Add a field "Course Reference" to the content type as a "Node Reference" "Select List"
+17. Save. Check "Required field", check "Course" as referenceable content type, then Save again.
+18. Add "Chapter Number" & "Section Number" as two "Text" "Text field"s that are required.
+19. Add "Demo Type" as a "List (integer)" "Select list".
+20. Save. Add these values:
+    0|非免費閱讀
+    1|免費閱讀
+    2|會員免費閱讀
+21. Save. Check "Required field", then Save again.
+22. Add "Embed HTML" as a non-required "Long Text" "Text area (multiple rows)".
+23. Add "Movie Name" as a required "Text" "Text field".
+24. In Configuration -> TLearn and Configuration -> TLearn -> Section, map all the fields together.
+25. Copy over node--section.tpl.php to ./all/themes/gomobile/ (if you're using the gomobile theme).
+26. Create a sample class (not a UC product) and one sample section.
+27. Whee!
