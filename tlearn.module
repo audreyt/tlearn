@@ -189,7 +189,12 @@ function tlearn_theme() {
  */
 function tlearn_fetch_class_node($section_nid) {
   $section_node = node_load($section_nid); 
-  $items = field_get_items('node', $section_node, 'field_class_ref');
+
+  if (!($field_classref_key = variable_get('tlearn_section_classref'))) {
+    drupal_set_message('尚未設定 tlearn 模組，未定義節次之課程連結欄位。', 'error');
+    exit;
+  }
+  $items = field_get_items('node', $section_node, $field_classref_key);
 
 //	dpm($items);
   
